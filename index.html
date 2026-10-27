@@ -1042,4 +1042,216 @@ document.addEventListener('keydown',e=>{
 </script>
 
 </body>
+
+<!-- ==================== MÓDULO CAD — Cadastros + Formulário Excel AT/RD ==================== -->
+<script>
+"use strict";
+const CadB={
+  ST:['Não iniciado','Em andamento','Concluído','Paralisado','Cancelado'],
+  STB:{'Não iniciado':'b-x','Em andamento':'b-b','Concluído':'b-g','Paralisado':'b-y','Cancelado':'b-r'},
+  DEM:['Planejamento Estratégico','Cliente Interno - Empreendimentos AT','Cliente Interno - Empreendimentos RD','Cliente Externo','Manutenção'],
+  UF:['MA','PA','PI','AL','RS','AP','GO'],
+  COLS:['Equipe','Distribuidora','Regional','Empreendimento','Demandante','Nome Obra','Nº PEP','Valor (R$)','Data Prevista','Data Real','Status Projeto','Status Autorizações','Status Obra'],
+  ff:{eq:'',d:''},
+  uid:()=>Math.random().toString(36).slice(2,9),
+  K:h=>U.N(h).replace(/[^A-Z0-9]/g,''),
+  norm(c){c=c||{};c.distr=c.distr||this.UF.map(u=>({id:'D'+u,nome:'EQTL '+u}));c.reg=c.reg||[];c.emp=c.emp||[];
+    c.dem=c.dem||this.DEM.map((n,i)=>({id:'M'+i,nome:n}));c.obras=c.obras||{};return c},
+  nm(k,id){return(S.cad[k].find(x=>x.id===id)||{}).nome||''},
+  opts(a,sel,z='—'){return`<option value="">${z}</option>`+a.map(x=>`<option value="${x.id}" ${x.id===sel?'selected':''}>${U.esc(x.nome)}</option>`).join('')},
+  casc(d,r,sel){U.$(r).innerHTML=this.opts(S.cad.reg.filter(y=>y.distr===U.$(d).value),sel)},
+  cascE(sel){U.$('oE').innerHTML=this.opts(S.cad.emp.filter(e=>e.reg===U.$('oR').value),sel)},
+  uses(k,id){const c=S.cad,o=Object.values(c.obras);
+    return k==='distr'?c.reg.filter(r=>r.distr===id).length+o.filter(r=>r.distr===id).length
+      :k==='reg'?c.emp.filter(e=>e.reg===id).length+o.filter(r=>r.reg===id).length:o.filter(r=>r[k]===id).length},
+  commit(acao,id,a,d){Audit.log(acao,'Cadastro',id,a,d);Store.save();App.render();UI.toast('Salvo')},
+
+  /* ---------- ABA CADASTROS ---------- */
+  render(){
+    const c=S.cad,tb=(k,t,cols,row)=>`<div class="card"><h3>${t}<span class="r"><button class="btn sm g" ${Perm.dis('gov')} onclick="CadB.edit('${k}')">+ Novo</button></span></h3>
+      <div class="tw" style="max-height:320px"><table><thead><tr>${cols.map(x=>`<th>${x}</th>`).join('')}<th>Vínculos</th><th></th></tr></thead><tbody>
+      ${c[k].map(x=>`<tr>${row(x)}<td>${this.uses(k,x.id)}</td><td><button class="btn sm gh" onclick="CadB.edit('${k}','${x.id}')">✏️</button> <button class="btn sm r" onclick="CadB.del('${k}','${x.id}')">🗑</button></td></tr>`).join('')||'<tr><td colspan="9" class="mut">Nenhum registro</td></tr>'}
+      </tbody></table></div></div>`;
+    U.$('t-cad').innerHTML=`<div class="grid g2">
+      ${tb('distr','🏢 Distribuidoras',['Nome'],x=>`<td>${U.esc(x.nome)}</td>`)}
+      ${tb('reg','🗺️ Regionais',['Nome','Distribuidora'],x=>`<td>${U.esc(x.nome)}</td><td>${U.esc(this.nm('distr',x.distr))}</td>`)}
+      ${tb('emp','🏗️ Empreendimentos',['Nome','Regional','Distribuidora','SE'],x=>{const r=c.reg.find(y=>y.id===x.reg)||{};return`<td>${U.esc(x.nome)}</td><td>${U.esc(r.nome||'')}</td><td>${U.esc(this.nm('distr',r.distr))}</td><td>${U.esc(x.se||'')}</td>`})}
+      ${tb('dem','👤 Demandantes',['Nome'],x=>`<td>${U.esc(x.nome)}</td>`)}</div>`;
+  },
+  edit(k,id){
+    if(!Perm.guard('gov'))return;const c=S.cad,x=id?c[k].find(y=>y.id===id):{};
+    let b=`<label class="fl">Nome</label><input id="cN" value="${U.esc(x.nome||'')}">`;
+    if(k==='reg')b+=`<label class="fl">Distribuidora</label><select id="cD">${this.opts(c.distr,x.distr)}</select>`;
+    if(k==='emp'){const r=c.reg.find(y=>y.id===x.reg)||{};
+      b+=`<label class="fl">Distribuidora</label><select id="cD" onchange="CadB.casc('cD','cR')">${this.opts(c.distr,r.distr)}</select>
+      <label class="fl">Regional</label><select id="cR"></select><label class="fl">Subestação (opcional)</label><input id="cS" value="${U.esc(x.se||'')}">`}
+    UI.modal({title:(id?'Editar':'Novo')+' cadastro',body:b,buttons:[{t:'Cancelar',c:'gh'},{t:'Salvar',c:'g',fn:()=>{
+      const n=U.$('cN').value.trim(),o={id:id||this.uid(),nome:n};if(!n){UI.toast('Nome obrigatório','y');return false}
+      if(k==='reg'){o.distr=U.$('cD').value;if(!o.distr){UI.toast('Selecione a distribuidora','y');return false}}
+      if(k==='emp'){o.reg=U.$('cR').value;o.se=U.$('cS').value.trim();if(!o.reg){UI.toast('Selecione a regional','y');return false}}
+      if(c[k].some(y=>y.id!==o.id&&U.N(y.nome)===U.N(n)&&y.distr===o.distr&&y.reg===o.reg)){UI.toast('Cadastro já existe','y');return false}
+      const ant=id?x.nome:null;if(id)Object.assign(x,o);else c[k].push(o);this.commit(id?'Editar cadastro':'Novo cadastro',k+':'+o.id,ant,n)}}]});
+    if(k==='emp')this.casc('cD','cR',x.reg);
+  },
+  del(k,id){
+    if(!Perm.guard('gov'))return;const n=this.uses(k,id),x=S.cad[k].find(y=>y.id===id);
+    if(n){UI.toast(`🔒 Bloqueado: ${n} registro(s) vinculado(s)`,'r');return}
+    UI.ask('Excluir cadastro',`Excluir <b>${U.esc(x.nome)}</b>?`,()=>{S.cad[k]=S.cad[k].filter(y=>y.id!==id);this.commit('Excluir cadastro',k+':'+id,x.nome,'')});
+  },
+
+  /* ---------- ABA FORMULÁRIO AT/RD ---------- */
+  late:r=>r.dPrev&&!r.dReal&&r.dPrev<U.today()&&!['Concluído','Cancelado'].includes(r.stObra),
+  renderF(){
+    const c=S.cad,f=this.ff,L=Object.values(c.obras).filter(r=>(!f.eq||r.equipe===f.eq)&&(!f.d||r.distr===f.d));
+    const par={};Object.values(c.obras).forEach(r=>{const p=par[r.emp]=par[r.emp]||{AT:0,RD:0};p[r.equipe]++});
+    const tot=L.reduce((t,r)=>t+(r.valor||0),0),st=s=>`<span class="badge ${this.STB[s]||'b-x'}">${U.esc(s||'—')}</span>`;
+    const k=[['Registros',L.length,'azul'],['Valor total','R$ '+tot.toLocaleString('pt-BR',{maximumFractionDigits:0}),'roxo'],['Atrasados',L.filter(this.late).length,'vermelho'],
+      ...this.ST.map((s,i)=>[s,L.filter(r=>r.stObra===s).length,['cinza','azul','verde','amarelo','vermelho'][i]])];
+    U.$('t-form').innerHTML=`<div class="card"><h3>📥 Formulário Padrão AT / RD<span class="r row">
+      <button class="btn" onclick="CadB.modelo()">⬇️ Baixar Modelo</button>
+      <button class="btn g" ${Perm.dis('gov')} onclick="U.$('cadFile').click()">⬆️ Importar Excel</button>
+      <button class="btn p" ${Perm.dis('gov')} onclick="CadB.editO()">+ Novo registro</button>
+      <button class="btn gh" onclick="CadB.exportO()">📤 Exportar</button></span></h3>
+      <input type="file" id="cadFile" accept=".xlsx,.xls" hidden onchange="CadB.imp(this.files[0]);this.value=''">
+      <div class="row"><div style="width:150px"><label class="fl">Equipe</label><select onchange="CadB.ff.eq=this.value;CadB.renderF()"><option value="">Todas</option>${['AT','RD'].map(x=>`<option ${f.eq===x?'selected':''}>${x}</option>`).join('')}</select></div>
+      <div style="width:200px"><label class="fl">Distribuidora</label><select onchange="CadB.ff.d=this.value;CadB.renderF()">${this.opts(c.distr,f.d,'Todas')}</select></div></div><br>
+      <div class="grid g4">${k.map(([l,v,cl])=>`<div class="mini"><b style="color:var(--${cl})">${v}</b>${l}</div>`).join('')}</div></div>
+      <div class="card"><div class="tw"><table><thead><tr>${['Equipe','Distribuidora','Regional','Empreendimento','Interface','Demandante','Nome Obra','Nº PEP','Valor (R$)','Prevista','Real','St. Projeto','St. Autoriz.','St. Obra',''].map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>
+      ${L.map(r=>{const o=r.equipe==='AT'?'RD':'AT',n=(par[r.emp]||{})[o]||0;return`<tr>
+        <td><span class="badge ${r.equipe==='AT'?'b-b':'b-p'}">${r.equipe}</span></td><td>${U.esc(this.nm('distr',r.distr))}</td><td>${U.esc(this.nm('reg',r.reg))}</td><td>${U.esc(this.nm('emp',r.emp))}</td>
+        <td><span class="badge ${n?'b-g':'b-r'}">${n?`🔗 ${n} ${o}`:'sem par '+o}</span></td><td>${U.esc(this.nm('dem',r.dem))}</td><td>${U.esc(U.tr(r.nome,40))}</td><td>${U.esc(r.pep)}</td>
+        <td style="text-align:right">${r.valor==null?'—':r.valor.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
+        <td>${U.fmtD(r.dPrev)} ${this.late(r)?'<span class="badge b-r">atraso</span>':''}</td><td>${U.fmtD(r.dReal)}</td>
+        <td>${st(r.stProj)}</td><td>${st(r.stAut)}</td><td>${st(r.stObra)}</td>
+        <td><button class="btn sm gh" onclick='CadB.editO(${U.q(r.pep)})'>✏️</button> <button class="btn sm r" onclick='CadB.delO(${U.q(r.pep)})'>🗑</button></td></tr>`}).join('')||'<tr><td colspan="15" class="mut">Nenhum registro. Baixe o modelo e importe.</td></tr>'}
+      </tbody></table></div></div>`;
+  },
+  val(o,upd){const e=[];
+    if(!o.nome)e.push('Nome Obra obrigatório');if(!o.pep)e.push('Nº PEP obrigatório');else if(!upd&&S.cad.obras[o.pep])e.push('PEP já cadastrado');
+    if(!['AT','RD'].includes(o.equipe))e.push('Equipe deve ser AT ou RD');
+    if(!o.distr)e.push('Distribuidora não cadastrada');if(!o.reg)e.push('Regional não cadastrada');if(!o.emp)e.push('Empreendimento não cadastrado');if(!o.dem)e.push('Demandante não cadastrado');
+    if(o.valor!=null&&o.valor<0)e.push('Valor negativo');if(o.dReal&&o.dReal>U.today())e.push('Data Real futura');
+    [o.stProj,o.stAut,o.stObra].forEach(s=>{if(!this.ST.includes(s))e.push('Status inválido: '+s)});return e},
+  editO(pep){
+    if(!Perm.guard('gov'))return;const c=S.cad,x=pep?c.obras[pep]:{};
+    const sel=(id,a,v)=>`<select id="${id}">${a.map(z=>`<option ${z===v?'selected':''}>${z}</option>`).join('')}</select>`;
+    UI.modal({title:pep?'Editar registro':'Novo registro',wide:true,body:`<div class="f4">
+      <div><label class="fl">Equipe</label>${sel('oEq',['AT','RD'],x.equipe)}</div>
+      <div><label class="fl">Distribuidora</label><select id="oD" onchange="CadB.casc('oD','oR');CadB.cascE()">${this.opts(c.distr,x.distr)}</select></div>
+      <div><label class="fl">Regional</label><select id="oR" onchange="CadB.cascE()"></select></div>
+      <div><label class="fl">Empreendimento</label><select id="oE"></select></div>
+      <div><label class="fl">Demandante</label><select id="oM">${this.opts(c.dem,x.dem)}</select></div>
+      <div style="grid-column:span 2"><label class="fl">Nome Obra *</label><input id="oN" value="${U.esc(x.nome||'')}"></div>
+      <div><label class="fl">Nº PEP *</label><input id="oP" value="${U.esc(x.pep||'')}" ${pep?'disabled':''}></div>
+      <div><label class="fl">Valor (R$)</label><input id="oV" type="number" min="0" step="0.01" value="${x.valor??''}"></div>
+      <div><label class="fl">Data Prevista</label><input id="oDp" type="date" value="${x.dPrev||''}"></div>
+      <div><label class="fl">Data Real</label><input id="oDr" type="date" max="${U.today()}" value="${x.dReal||''}"></div><div></div>
+      ${[['oS1','Status Projeto','stProj'],['oS2','Status Autorizações','stAut'],['oS3','Status Obra','stObra']].map(([i,l,k])=>`<div><label class="fl">${l}</label>${sel(i,this.ST,x[k]||this.ST[0])}</div>`).join('')}</div>`,
+      buttons:[{t:'Cancelar',c:'gh'},{t:'Salvar',c:'g',fn:()=>{
+        const g=i=>U.$(i).value,o={equipe:g('oEq'),distr:g('oD'),reg:g('oR'),emp:g('oE'),dem:g('oM'),nome:g('oN').trim(),pep:g('oP').trim(),
+          valor:U.num(g('oV')),dPrev:g('oDp'),dReal:g('oDr'),stProj:g('oS1'),stAut:g('oS2'),stObra:g('oS3')};
+        const e=this.val(o,!!pep);if(e.length){UI.toast(e[0],'r');return false}this.put(o,pep?'Editar registro':'Novo registro')}}]});
+    this.casc('oD','oR',x.reg);this.cascE(x.emp);
+  },
+  put(o,acao){const a=S.cad.obras[o.pep];S.cad.obras[o.pep]={...a,...o,upd:U.now(),u:S.config.profile};
+    Audit.log(acao,'Formulário',o.pep,a?a.stObra:null,o.stObra);Store.save();App.render();UI.toast('Registro salvo')},
+  delO(pep){if(!Perm.guard('gov'))return;UI.ask('Excluir registro',`Excluir PEP <b>${U.esc(pep)}</b>?`,()=>{const a=S.cad.obras[pep];delete S.cad.obras[pep];
+    Audit.log('Excluir registro','Formulário',pep,a.nome,'');Store.save();App.render()})},
+
+  /* ---------- EXCEL ---------- */
+  toRow(r){return[r.equipe,this.nm('distr',r.distr),this.nm('reg',r.reg),this.nm('emp',r.emp),this.nm('dem',r.dem),r.nome,r.pep,r.valor??'',
+    r.dPrev?U.fmtD(r.dPrev):'',r.dReal?U.fmtD(r.dReal):'',r.stProj,r.stAut,r.stObra]},
+  sheet(aoa){const ws=XLSX.utils.aoa_to_sheet(aoa);ws['!cols']=(aoa[0]||[]).map(h=>({wch:Math.max(14,String(h).length+4)}));return ws},
+  modelo(){
+    const c=S.cad,wb=XLSX.utils.book_new(),e=c.emp[0],r=e&&c.reg.find(x=>x.id===e.reg);
+    const ex=e&&r?[['AT',this.nm('distr',r.distr),r.nome,e.nome,c.dem[0]?.nome||'','EXEMPLO - APAGUE ESTA LINHA','XX-0000000XXX0.A',150000,'31/12/2026','',this.ST[1],this.ST[0],this.ST[0]]]:[];
+    XLSX.utils.book_append_sheet(wb,this.sheet([this.COLS,...ex]),'Interfaces');
+    const L=[['Equipe',['AT','RD']],['Distribuidora',c.distr.map(x=>x.nome)],['Regional',c.reg.map(x=>x.nome)],['Distribuidora da Regional',c.reg.map(x=>this.nm('distr',x.distr))],
+      ['Empreendimento',c.emp.map(x=>x.nome)],['Regional do Empreendimento',c.emp.map(x=>this.nm('reg',x.reg))],['Demandante',c.dem.map(x=>x.nome)],['Status',this.ST]];
+    const n=Math.max(...L.map(x=>x[1].length)),aoa=[L.map(x=>x[0])];for(let i=0;i<n;i++)aoa.push(L.map(x=>x[1][i]??''));
+    XLSX.utils.book_append_sheet(wb,this.sheet(aoa),'Listas');
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['INSTRUÇÕES DE PREENCHIMENTO'],
+      ['1. Preencha somente a aba "Interfaces", com 1 linha por obra. Não renomeie colunas nem abas.'],
+      ['2. Nome Obra e Nº PEP são obrigatórios. O PEP não pode se repetir.'],['3. Equipe: AT ou RD.'],
+      ['4. Distribuidora, Regional, Empreendimento e Demandante: use exatamente os nomes da aba "Listas".'],
+      ['5. Valor (R$): só números (ex.: 150000,00).'],['6. Datas no formato dd/mm/aaaa. A Data Real não pode ser futura.'],
+      ['7. Status: '+this.ST.join(', ')+'.'],['8. A linha EXEMPLO é ignorada na importação.'],['Gerado em '+new Date().toLocaleString('pt-BR')]]),'Instruções');
+    XLSX.writeFile(wb,`Modelo_Interfaces_AT_RD_${U.today()}.xlsx`);UI.toast('Modelo gerado','b');
+  },
+  async imp(f){
+    if(!f||!Perm.guard('gov'))return;
+    try{
+      const wb=XLSX.read(await f.arrayBuffer(),{cellDates:true}),ws=wb.Sheets['Interfaces']||wb.Sheets[wb.SheetNames[0]];
+      const hdr=(XLSX.utils.sheet_to_json(ws,{header:1})[0]||[]).map(this.K),miss=this.COLS.filter(h=>!hdr.includes(this.K(h)));
+      if(miss.length){UI.modal({title:'🔴 Arquivo fora do padrão',body:`<div class="err">Colunas ausentes: <b>${miss.join(', ')}</b></div><p>Baixe o modelo padrão e tente novamente.</p>`});return}
+      const c=S.cad,seen=new Set(),ST=v=>this.ST.find(s=>U.N(s)===U.N(v))||(U.isNull(v)?this.ST[0]:String(v));
+      const res=XLSX.utils.sheet_to_json(ws,{defval:''}).map((r,i)=>{
+        const g=h=>Parser.g(r,h),dn=String(g('Distribuidora'));
+        const d=c.distr.find(x=>U.N(x.nome)===U.N(dn)||(U.ufOf(dn)&&U.ufOf(x.nome)===U.ufOf(dn)));
+        const rg=d&&c.reg.find(x=>x.distr===d.id&&U.N(x.nome)===U.N(g('Regional')));
+        const em=rg&&c.emp.find(x=>x.reg===rg.id&&U.N(x.nome)===U.N(g('Empreendimento')));
+        const dm=c.dem.find(x=>U.N(x.nome)===U.N(g('Demandante')));
+        const o={equipe:U.N(g('Equipe')),distr:d?.id||'',reg:rg?.id||'',emp:em?.id||'',dem:dm?.id||'',nome:String(g('Nome Obra')).trim(),pep:String(g('Nº PEP')).trim(),
+          valor:U.num(g('Valor (R$)')),dPrev:U.pd(g('Data Prevista')),dReal:U.pd(g('Data Real')),stProj:ST(g('Status Projeto')),stAut:ST(g('Status Autorizações')),stObra:ST(g('Status Obra'))};
+        if(/^EXEMPLO/i.test(o.nome)||(!o.nome&&!o.pep))return null;
+        const e=this.val(o,true),w=[];
+        if(g('Data Prevista')!==''&&!o.dPrev)e.push('Data Prevista inválida');if(g('Data Real')!==''&&!o.dReal)e.push('Data Real inválida');
+        if(o.pep&&seen.has(o.pep))e.push('PEP repetido no arquivo');seen.add(o.pep);
+        if(c.obras[o.pep])w.push('PEP existente (será atualizado)');if(o.valor==null)w.push('Valor vazio');if(!o.dPrev)w.push('Sem Data Prevista');
+        return{i:i+2,o,e,w,raw:r};
+      }).filter(Boolean);
+      this.preview(res,f.name);
+    }catch(e){UI.toast('Falha ao ler o Excel: '+e.message,'r')}
+  },
+  preview(res,fn){
+    const ok=res.filter(r=>!r.e.length),bad=res.filter(r=>r.e.length),wn=ok.filter(r=>r.w.length).length;this._bad=bad;
+    UI.modal({title:'Prévia da importação: '+fn,wide:true,body:`<div class="grid g4">${[['Linhas',res.length,'azul'],['🟢 OK',ok.length-wn,'verde'],['🟡 Alerta',wn,'amarelo'],['🔴 Erro',bad.length,'vermelho']]
+      .map(([l,v,c])=>`<div class="mini"><b style="color:var(--${c})">${v}</b>${l}</div>`).join('')}</div><br>
+      ${bad.length?'<div class="err">Linhas com 🔴 erro não serão importadas. Use "Baixar erros" para devolver à equipe.</div>':''}
+      <div class="tw" style="max-height:330px"><table><thead><tr><th>Linha</th><th></th><th>PEP</th><th>Nome Obra</th><th>Mensagens</th></tr></thead><tbody>
+      ${res.map(r=>`<tr><td>${r.i}</td><td>${r.e.length?'🔴':r.w.length?'🟡':'🟢'}</td><td>${U.esc(r.o.pep)}</td><td>${U.esc(U.tr(r.o.nome,40))}</td><td class="mut">${U.esc([...r.e,...r.w].join(' • '))}</td></tr>`).join('')}
+      </tbody></table></div><br><label class="fl">Modo de gravação</label>
+      <label><input type="radio" name="iM" value="m" checked> Mesclar (atualiza PEPs existentes e inclui novos)</label> &nbsp;
+      <label><input type="radio" name="iM" value="s"> Substituir toda a base do formulário</label>`,
+      buttons:[{t:'Cancelar',c:'gh'},{t:'Baixar erros',c:'y',fn:()=>{this.errXls();return false}},{t:`Importar ${ok.length}`,c:'g',fn:()=>{
+        if(!ok.length){UI.toast('Nada a importar','y');return false}
+        const sub=document.querySelector('input[name=iM]:checked').value==='s';if(sub)S.cad.obras={};
+        ok.forEach(r=>S.cad.obras[r.o.pep]={...(S.cad.obras[r.o.pep]||{}),...r.o,upd:U.now(),u:S.config.profile});
+        Audit.log('Importar formulário','Formulário',fn,null,`${ok.length} ok / ${bad.length} erro${sub?' (substituição)':''}`);
+        Store.save();App.render();UI.toast(`${ok.length} registro(s) importado(s)`)}}]});
+  },
+  errXls(){if(!this._bad?.length){UI.toast('Sem erros 🎉','g');return}
+    const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,this.sheet([['Linha','Erros',...this.COLS],...this._bad.map(r=>[r.i,r.e.join(' • '),...this.COLS.map(h=>Parser.g(r.raw,h))])]),'Erros');
+    XLSX.writeFile(wb,`Erros_Importacao_${U.stampF()}.xlsx`)},
+  exportO(){const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,this.sheet([this.COLS,...Object.values(S.cad.obras).map(r=>this.toRow(r))]),'Interfaces');
+    XLSX.writeFile(wb,`Formulario_AT_RD_${U.stampF()}.xlsx`)}
+};
+
+/* ---------- Persistência (a coleção 'cad' entra no LocalStorage e no Backup) ---------- */
+Store.C.push('cad');
+(()=>{const ini=Store.init.bind(Store),clr=Store.clear.bind(Store);
+  Store.init=function(){const r=ini();let c=null;try{c=JSON.parse(localStorage.getItem(this.P+'cad'))}catch(e){}S.cad=CadB.norm(c);return r};
+  Store.clear=function(){const k=this.P+'cad',v=localStorage.getItem(k);clr();if(v)localStorage.setItem(k,v)}; // "Restaurar base" preserva cadastros
+})();
+
+/* ---------- Remove CATEGORIA (PI) dos filtros e renomeia Responsável → Demandante ---------- */
+Filters.K=Filters.K.filter(k=>k[0]!=='cat').map(k=>k[0]==='resp'?['resp','Demandante']:k);
+App.on('afterLoad',()=>{if(S.config.filters)delete S.config.filters.cat});
+App.on('render',()=>{S.cad=CadB.norm(S.cad)});
+
+/* Varredura visual: oculta colunas/cards de PI e troca rótulos nas demais abas */
+const CadFix=U.debounce(()=>{
+  document.querySelectorAll('th,label,.fl,h4,option').forEach(e=>{if(!e.children.length&&/Respons[áa]vel/.test(e.textContent))e.textContent=e.textContent.replace(/Respons[áa]vel/g,'Demandante')});
+  document.querySelectorAll('table').forEach(tb=>[...tb.querySelectorAll('thead th')].forEach((th,i)=>{
+    if(/^(PI|Categoria(\s*\(PI\))?)$/i.test(th.textContent.trim())){th.style.display='none';tb.querySelectorAll('tbody tr').forEach(tr=>{if(tr.children[i])tr.children[i].style.display='none'})}}));
+  document.querySelectorAll('.card h3').forEach(h=>{if(/Categoria|\(PI\)/i.test(h.textContent))h.closest('.card').style.display='none'});
+},120);
+window.addEventListener('load',()=>new MutationObserver(CadFix).observe(document.body,{childList:true,subtree:true}));
+
+/* ---------- Abas ---------- */
+App.reg('form','📥 Formulário AT/RD',{render:()=>CadB.renderF()},90);
+App.reg('cad','⚙️ Cadastros',{render:()=>CadB.render()},91);
+</script>
+
+
 </html>
