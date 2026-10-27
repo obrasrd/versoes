@@ -2,542 +2,1044 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Comitê Interface RD x AT | Torre de Investimentos</title>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Governança de Interfaces AT x RD | Equatorial Energia</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
 <style>
-:root{--az:#065DAC;--vd:#0B9454;--am:#EAA02E;--vm:#B92927;--rx:#32306E;--cz:#F3F5F8}
-*{box-sizing:border-box;font-family:Segoe UI,Arial,sans-serif}
-body{margin:0;background:var(--cz);color:var(--rx);font-size:clamp(11px,.8vw,14px)}
-header{background:var(--az);color:#fff;padding:1vh 2vw;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px}
-header h1{margin:0;font-size:clamp(16px,1.4vw,24px)}header small{opacity:.85}
-.tabs button{background:transparent;border:1px solid #fff8;color:#fff;padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:600;margin-left:6px}
-.tabs button.on{background:#fff;color:var(--az)}
-.bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;padding:10px 2vw;background:#fff;border-bottom:1px solid #ddd;align-items:end;position:sticky;top:0;z-index:5}
-.bar>div{display:flex;flex-direction:column;gap:3px}
-.bar label{font-size:11px;font-weight:600}
-select,input{padding:7px;border:1px solid #ccc;border-radius:6px;width:100%;font-size:inherit}
-textarea{width:100%;padding:7px;border:1px solid #ccc;border-radius:6px;font:inherit}
-.btn{padding:8px 12px;border-radius:6px;cursor:pointer;font-weight:600;text-align:center;border:1px solid var(--az);background:var(--az);color:#fff}
-.btn input{display:none}.btn.vd{background:var(--vd);border-color:var(--vd)}
-.btn.out{background:#fff;color:var(--vm);border-color:var(--vm)}
-.btn.am{background:var(--am);border-color:var(--am)}
-.tog{display:flex}
-.tog button{flex:1;border:1px solid var(--az);background:#fff;color:var(--az);padding:7px 6px;cursor:pointer;font-weight:600}
-.tog button:first-child{border-radius:6px 0 0 6px}.tog button:last-child{border-radius:0 6px 6px 0}
-.tog button.on{background:var(--az);color:#fff}
-.chips{display:flex;gap:8px;flex-wrap:wrap}
-.chip{background:var(--rx);color:#fff;border-radius:14px;padding:4px 12px;font-size:.9em;cursor:pointer}
-.wrap{padding:1.5vh 2vw;display:grid;gap:1.5vh}
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
-.k{background:#fff;border-radius:10px;padding:12px;border-left:6px solid var(--az);box-shadow:0 1px 3px #0001}
-.k b{font-size:clamp(20px,1.8vw,30px);display:block}.k span{font-size:.9em}
-.g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(480px,1fr));gap:1.5vh}
-.g64{display:grid;grid-template-columns:minmax(0,3fr) minmax(320px,2fr);gap:1.5vh}
-.g46{display:grid;grid-template-columns:minmax(340px,2fr) minmax(0,3fr);gap:1.5vh;align-items:start}
-@media(max-width:1000px){.g64,.g46{grid-template-columns:1fr}}
-.card{background:#fff;border-radius:10px;padding:14px;box-shadow:0 1px 3px #0001;min-width:0}
-.card h3{margin:0 0 10px;color:var(--az);font-size:1.1em;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;text-transform:uppercase}
-.cbox{position:relative;width:100%;height:clamp(240px,34vh,400px)}
-.cbox canvas{cursor:pointer}
-.tbl{max-height:clamp(240px,34vh,400px);overflow:auto}
-table{width:100%;border-collapse:collapse;font-size:.95em}
-th{background:var(--rx);color:#fff;padding:6px;position:sticky;top:0}
-td{padding:5px 6px;border-bottom:1px solid #e3e6ea;text-align:center}
-tr.tt td{background:#E8EEF7;font-weight:700}
-.leg span{margin-right:12px;font-size:.9em;white-space:nowrap}
-.gantt{max-height:62vh;overflow:auto;border:1px solid #eee}
-.gh,.gr{display:grid;grid-template-columns:minmax(170px,22%) 1fr;min-width:700px}
-.gh{position:sticky;top:0;background:#fff;z-index:3;border-bottom:2px solid var(--az);height:26px}
-.gr{border-bottom:1px solid #eee;height:36px}.gr:hover{background:#f6f9fd}
-.lb{padding:3px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:14px}
-.gr .lb{cursor:pointer}
-.tr{position:relative}
-.mth{position:absolute;top:0;bottom:0;border-left:1px solid #e3e6ea;font-size:10px;padding:6px 2px;color:#777}
-.hoje{position:absolute;top:0;bottom:0;width:2px;background:var(--rx);z-index:1}
-.br{position:absolute;top:9px;height:18px;border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:11px;white-space:nowrap}
-.br.o span{position:absolute;left:100%;margin-left:16px;color:var(--rx)}
-.dt{position:absolute;top:11px;width:14px;height:14px;border-radius:50%;transform:translateX(-7px);border:2px solid #fff;z-index:2;box-shadow:0 0 2px #0006}
-.tx{position:absolute;top:10px;margin-left:12px;font-size:11px;font-weight:700;white-space:nowrap}
-#empty{padding:12vh 2vw;text-align:center;font-size:1.2em}
-/* formulário */
-.peps{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
-.pb{border:1px solid #d5dae2;border-left:6px solid var(--az);background:#fff;border-radius:8px;padding:8px 10px;cursor:pointer;text-align:left;display:flex;flex-direction:column;min-width:150px;color:var(--rx)}
-.pb.RD{border-left-color:var(--am)}.pb.on{background:#E8EEF7;box-shadow:0 0 0 2px var(--az)}
-.pb small{font-weight:700;color:#777}.pb span{font-size:.85em;color:#777}
-.fg{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
-label.f{display:flex;flex-direction:column;gap:4px;font-weight:600;font-size:.9em;margin-bottom:10px}
-.thumbs{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0}
-.thumbs div{width:130px;font-size:10px}
-.thumbs img{width:130px;height:95px;object-fit:cover;border-radius:6px;cursor:pointer;border:1px solid #ddd}
-.thumbs .pdf{width:130px;height:95px;display:flex;align-items:center;justify-content:center;background:#F3F5F8;border-radius:6px;border:1px solid #ddd;cursor:pointer;font-size:12px;font-weight:700;color:var(--vm)}
-.thumbs input{font-size:10px;padding:3px;margin-top:3px}
-.hi{border:1px solid #e3e6ea;border-left:5px solid var(--az);border-radius:8px;padding:8px 10px;margin-bottom:8px}
-.hi.RD{border-left-color:var(--am)}
-.tag{display:inline-block;padding:2px 8px;border-radius:10px;color:#fff;font-size:.85em;font-weight:600}
-details{margin-top:10px;border:1px dashed #bbb;border-radius:8px;padding:8px}
-summary{cursor:pointer;font-weight:700;color:var(--az)}
-.ck{display:flex;gap:6px;align-items:center;text-align:left}.ck input{width:auto}
+:root{--azul:#065DAC;--azul2:#0A3D7A;--verde:#0B9454;--amarelo:#EAA02E;--laranja:#E87722;--vermelho:#B92927;--roxo:#32306E;--cinza:#9AA3B2;
+--bg:#F3F5F8;--card:#FFF;--txt:#32306E;--mut:#6B7280;--bd:#E2E6EC;--hd:#F6F8FB;--in:#FFF;--sh:0 1px 2px rgba(16,24,40,.06),0 2px 6px rgba(16,24,40,.06)}
+body.dark{--bg:#11141B;--card:#1B2029;--txt:#E6E9F0;--mut:#9AA3B2;--bd:#2C3341;--hd:#222936;--in:#161A22;--roxo:#C9C7F5}
+*{box-sizing:border-box}html,body{margin:0;padding:0}
+body{font-family:"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--txt);font-size:13px}
+a{color:var(--azul);cursor:pointer}
+header{background:linear-gradient(90deg,var(--azul2),var(--azul));color:#fff;padding:8px 18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;position:sticky;top:0;z-index:40;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.logo{display:flex;align-items:center;gap:10px}.logo svg{width:34px;height:34px}
+.logo h1{font-size:16px;margin:0;font-weight:700}.logo small{display:block;font-size:10.5px;opacity:.85}
+.hsp{flex:1}.stamp{font-size:11px;background:rgba(255,255,255,.12);padding:4px 10px;border-radius:12px}
+.gsearch{position:relative;width:300px}
+.gsearch input{width:100%;border:0;border-radius:18px;padding:7px 14px;background:rgba(255,255,255,.95);color:#32306E}
+.gres{position:absolute;top:36px;left:0;right:0;background:var(--card);color:var(--txt);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.25);max-height:380px;overflow:auto;display:none;z-index:60}
+.gres div{padding:7px 12px;border-bottom:1px solid var(--bd);cursor:pointer;font-size:12px}.gres div:hover{background:var(--hd)}.gres b{color:var(--azul)}
+header select{width:auto;background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.35)}header select option{color:#32306E}
+.hbtn{background:transparent;border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:12px}.hbtn:hover{background:rgba(255,255,255,.15)}
+nav{display:flex;gap:2px;background:var(--card);border-bottom:1px solid var(--bd);padding:0 14px;overflow-x:auto;position:sticky;top:52px;z-index:35}
+nav button{border:0;background:none;padding:12px 15px;cursor:pointer;color:var(--mut);font-weight:600;white-space:nowrap;border-bottom:3px solid transparent;font-size:12.5px}
+nav button:hover{color:var(--azul)}nav button.on{color:var(--azul);border-bottom-color:var(--amarelo)}
+nav .cnt{background:var(--vermelho);color:#fff;border-radius:9px;padding:0 6px;font-size:10px;margin-left:5px}
+.fbar{display:grid;grid-template-columns:repeat(8,minmax(120px,1fr)) auto;gap:8px;padding:10px 16px;background:var(--hd);border-bottom:1px solid var(--bd)}
+.fbar:empty{display:none}
+.fbar label,.fl{font-size:10px;color:var(--mut);font-weight:700;text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:2px}
+.chips{padding:6px 16px 0;display:flex;gap:6px;flex-wrap:wrap}
+.chip{background:var(--azul);color:#fff;border-radius:12px;padding:2px 10px;font-size:11px;display:inline-flex;align-items:center;gap:6px}.chip b{cursor:pointer}
+select,input,textarea{width:100%;padding:6px 8px;border:1px solid var(--bd);border-radius:6px;background:var(--in);color:var(--txt);font-size:12px;font-family:inherit}
+input:focus,select:focus,textarea:focus{outline:2px solid rgba(6,93,172,.35);border-color:var(--azul)}
+input:disabled,select:disabled,textarea:disabled{opacity:.6;cursor:not-allowed}
+input[type=checkbox],input[type=radio]{width:auto}input[type=range]{padding:0}
+.btn{border:0;border-radius:6px;padding:7px 13px;cursor:pointer;font-weight:600;font-size:12px;background:var(--azul);color:#fff;white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
+.btn:hover:not(:disabled){filter:brightness(1.08)}.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.g{background:var(--verde)}.btn.y{background:var(--amarelo);color:#222}.btn.r{background:var(--vermelho)}.btn.o{background:var(--laranja)}.btn.p{background:var(--roxo)}
+.btn.gh{background:transparent;border:1px solid var(--bd);color:var(--txt)}.btn.sm{padding:4px 8px;font-size:11px}
+main{padding:14px 16px 40px}.tab{display:none}.tab.on{display:block}
+.card{background:var(--card);border-radius:10px;padding:14px;box-shadow:var(--sh);margin-bottom:12px;border:1px solid var(--bd)}
+.card h3{margin:0 0 10px;color:var(--azul);font-size:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}.card h3 .r{margin-left:auto}
+.grid{display:grid;gap:12px}.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}.g6{grid-template-columns:repeat(6,minmax(0,1fr))}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.sp{flex:1}.mut{color:var(--mut);font-size:11px}
+.kpi{background:var(--card);border-radius:10px;padding:12px 14px;box-shadow:var(--sh);border:1px solid var(--bd);border-top:4px solid var(--azul);cursor:pointer;transition:transform .12s}
+.kpi:hover{transform:translateY(-2px)}.kpi .v{font-size:22px;font-weight:700;margin:4px 0 2px}
+.kpi .l{font-size:10.5px;color:var(--mut);font-weight:700;text-transform:uppercase}.kpi .s{font-size:11px;color:var(--mut)}
+.chart{height:250px;position:relative}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10.5px;font-weight:700;color:#fff;white-space:nowrap}
+.b-g{background:var(--verde)}.b-y{background:var(--amarelo);color:#222}.b-o{background:var(--laranja)}.b-r{background:var(--vermelho)}.b-b{background:var(--azul)}.b-p{background:#32306E}.b-x{background:var(--cinza)}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:var(--azul);color:#fff;text-align:left;padding:7px 8px;position:sticky;top:0;z-index:2;font-weight:600;white-space:nowrap}
+td{padding:5px 8px;border-bottom:1px solid var(--bd);vertical-align:middle}tbody tr:hover td{background:var(--hd)}
+tr.dirty td{background:rgba(234,160,46,.16)!important}
+.tw{max-height:600px;overflow:auto;border:1px solid var(--bd);border-radius:8px}.tw td input,.tw td select{min-width:92px;padding:4px 6px}
+.pchip{display:inline-flex;align-items:center;gap:4px;background:var(--hd);border:1px solid var(--bd);border-radius:10px;padding:1px 7px;margin:1px;font-size:11px}.pchip b{cursor:pointer;color:var(--vermelho)}
+.bar{height:7px;background:var(--bd);border-radius:4px;overflow:hidden;min-width:60px}.bar i{display:block;height:100%;background:var(--azul)}
+.modal{position:fixed;inset:0;background:rgba(10,20,40,.5);display:none;align-items:center;justify-content:center;z-index:90}.modal.on{display:flex}
+.mbox{background:var(--card);border-radius:12px;max-height:90vh;overflow:auto;padding:18px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.mbox h3{margin:0 0 12px;color:var(--azul)}.mfoot{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+.drawer{position:fixed;top:0;right:-500px;width:480px;max-width:96vw;height:100vh;background:var(--card);box-shadow:-8px 0 30px rgba(0,0,0,.25);z-index:85;transition:right .25s;padding:18px;overflow:auto}.drawer.on{right:0}
+#toast{position:fixed;bottom:20px;right:20px;color:#fff;padding:11px 18px;border-radius:8px;display:none;z-index:99;font-weight:600;box-shadow:0 6px 18px rgba(0,0,0,.25);max-width:420px}
+#tip{position:fixed;pointer-events:none;background:#32306E;color:#fff;padding:10px 12px;border-radius:8px;font-size:11.5px;z-index:95;display:none;line-height:1.6;max-width:340px}
+.split{display:grid;grid-template-columns:minmax(300px,30%) 1fr;gap:12px;align-items:start}
+.queue{max-height:calc(100vh - 260px);overflow:auto;padding-right:4px}
+.icard{background:var(--card);border:1px solid var(--bd);border-left:5px solid var(--azul);border-radius:9px;padding:10px 12px;margin-bottom:8px;cursor:pointer;box-shadow:var(--sh)}
+.icard.sel{outline:2px solid var(--amarelo)}.icard h4{margin:0;color:var(--azul);font-size:12.5px}
+.sec{border:1px solid var(--bd);border-radius:9px;padding:12px;margin-bottom:10px}
+.sec h4{margin:0 0 8px;color:var(--roxo);font-size:12.5px;text-transform:uppercase}
+.f4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.f3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.f2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.sbar{height:8px;background:var(--bd);border-radius:4px;overflow:hidden;width:140px;display:inline-block;vertical-align:middle}.sbar i{display:block;height:100%}
+.warn{background:rgba(234,160,46,.15);border:1px solid var(--amarelo);border-radius:8px;padding:8px 10px;font-size:12px;margin-bottom:8px}
+.err{background:rgba(185,41,39,.1);border:1px solid var(--vermelho);border-radius:8px;padding:8px 10px;font-size:12px;margin-bottom:8px}
+.stepper{display:flex;margin-bottom:14px}.step{flex:1;text-align:center;padding:10px 4px;border-bottom:4px solid var(--bd);color:var(--mut);font-weight:600;font-size:12px}
+.step.on{border-color:var(--azul);color:var(--azul)}.step.ok{border-color:var(--verde);color:var(--verde)}
+.drop{border:2px dashed var(--azul);border-radius:12px;padding:40px;text-align:center;background:var(--hd);cursor:pointer}.drop.hov{background:rgba(6,93,172,.08)}
+.log{background:var(--hd);padding:10px;border-radius:8px;font-family:Consolas,monospace;font-size:11px;max-height:260px;overflow:auto;white-space:pre-wrap;border:1px solid var(--bd)}
+.mini{background:var(--hd);border-radius:8px;padding:10px;text-align:center;border:1px solid var(--bd)}.mini b{display:block;font-size:20px}
+#gantt{overflow-x:auto;border:1px solid var(--bd);border-radius:8px;background:var(--card)}#gantt svg{display:block}#gantt [data-p]{cursor:pointer}
+.gstrip{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.gstrip div{background:var(--hd);border-radius:8px;padding:8px 10px;border-left:4px solid var(--amarelo);cursor:pointer}.gstrip b{font-size:18px;display:block}
+details summary{cursor:pointer;font-weight:600;color:var(--azul)}
+@media(max-width:1366px){.g6{grid-template-columns:repeat(3,minmax(0,1fr))}.fbar{grid-template-columns:repeat(4,minmax(120px,1fr))}}
+@media(max-width:1100px){.g3,.g4{grid-template-columns:repeat(2,minmax(0,1fr))}.split{grid-template-columns:1fr}.f4{grid-template-columns:repeat(2,1fr)}.gsearch{width:200px}}
+@media(max-width:700px){.g2,.g3,.g4,.g6{grid-template-columns:1fr}.fbar{grid-template-columns:1fr 1fr}.f3,.f2{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <header>
-  <div><h1>Comitê Interface RD x AT</h1><small>Torre de Investimentos | Prazo de energização</small></div>
-  <div class="tabs"><small id="dt"></small><button id="tP" class="on">📊 Painel</button><button id="tF">📝 Formulário</button></div>
+  <div class="logo">
+    <svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="19" fill="#fff"/><path d="M22 5 L11 22 H19 L16 35 L29 16 H21 Z" fill="#EAA02E"/></svg>
+    <div><h1>Governança de Interfaces AT x RD</h1><small>Equatorial Energia • Planejamento • Engenharia AT • Engenharia RD</small></div>
+  </div>
+  <div class="hsp"></div>
+  <div class="gsearch"><input id="gq" placeholder="🔎 Busca global: Interface, SE, PEP, obra..." autocomplete="off"><div class="gres" id="gres"></div></div>
+  <span class="stamp" id="stamp"></span>
+  <select id="profile" title="Perfil de acesso"></select>
+  <button class="hbtn" onclick="App.toggleDark()" title="Modo escuro">🌓</button>
+  <button class="hbtn" onclick="App.backup()" title="Backup JSON">💾 Backup</button>
+  <button class="hbtn" onclick="App.help()" title="Ajuda">?</button>
 </header>
+<nav id="nav"></nav>
+<div class="fbar" id="fbar"></div>
+<div class="chips" id="chips"></div>
+<main id="main"></main>
+<div class="modal" id="modal"><div class="mbox"><h3 id="mTitle"></h3><div id="mBody"></div><div class="mfoot" id="mFoot"></div></div></div>
+<div class="drawer" id="drawer"></div>
+<div id="toast"></div>
+<div id="tip"></div>
 
-<div class="bar">
-  <div><label>&nbsp;</label><label class="btn">📂 Importar Excel<input type="file" id="f" accept=".xlsx,.xls,.xlsm"></label></div>
-  <div class="pf"><label>Visão</label><div class="tog"><button id="bO" class="on">SE</button><button id="bM">Alimentador</button></div></div>
-  <div class="pf"><label>Instalação</label><input id="fSe" list="lSe" placeholder="🔎 Digite a SE..."><datalist id="lSe"></datalist></div>
-  <div class="pf"><label>Distribuidora</label><select id="fEmp"><option value="">Todas</option></select></div>
-  <div class="pf"><label>Regional</label><select id="fReg"><option value="">Todas</option></select></div>
-  <div class="pf"><label>Demandante</label><select id="fDem"><option value="">Todos</option></select></div>
-  <div class="pf"><label>Ano entrega</label><select id="fAno"><option value="">Todos</option></select></div>
-  <div class="pf"><label>Horizonte (dias)</label><select id="fHz"><option value="">Todos</option><option>30</option><option>60</option><option>90</option><option>120</option></select></div>
-  <div class="pf"><label>&nbsp;</label><button class="btn out" id="bClr">✖ Limpar</button></div>
-  <div><label>&nbsp;</label><button class="btn vd" id="bExp" disabled>⬇ Exportar base</button></div>
-  <div class="ff" style="display:none"><label>&nbsp;</label><button class="btn am" id="bBk">💾 Backup formulário</button></div>
-  <div class="ff" style="display:none"><label>&nbsp;</label><label class="btn am">♻ Restaurar backup<input type="file" id="fBk" accept=".json"></label></div>
-</div>
+<!-- ==================== MÓDULO 1 — NÚCLEO ==================== -->
+<script>
+"use strict";
+/* ---------- U: utilitários ---------- */
+const U={
+  $:id=>document.getElementById(id),
+  N:s=>String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().trim(),
+  esc:s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),
+  q:s=>U.esc(JSON.stringify(String(s??''))),
+  NULLS:new Set(['','CADASTRAR','N/A','NA','SEM INFO','-','#N/D','NULL']),
+  MES:{JAN:0,FEV:1,MAR:2,ABR:3,MAI:4,JUN:5,JUL:6,AGO:7,SET:8,OUT:9,NOV:10,DEZ:11,FEB:1,APR:3,MAY:4,AUG:7,SEP:8,OCT:9,DEC:11},
+  isNull(v){return v==null||U.NULLS.has(U.N(v))},
+  num(v){if(U.isNull(v))return null;if(typeof v==='number')return Math.abs(v)<1e-9?0:v;let s=String(v).trim();if(s.includes(','))s=s.replace(/\./g,'').replace(',','.');const n=parseFloat(s);return isNaN(n)?null:(Math.abs(n)<1e-9?0:n)},
+  pct(v){if(U.isNull(v))return null;if(typeof v==='number')return +(v<=1.0000001?v*100:v).toFixed(2);return U.num(String(v).replace('%',''))},
+  iso:d=>d.toISOString().slice(0,10),
+  now:()=>new Date().toISOString(),
+  today(){const d=new Date();return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`},
+  pd(v){
+    if(U.isNull(v))return'';
+    if(v instanceof Date)return isNaN(v)?'':U.iso(v);
+    if(typeof v==='number')return(v>20000&&v<80000)?U.iso(new Date(Math.round((v-25569)*864e5))):'';
+    const s=String(v).trim();
+    if(/^\d{5}(\.\d+)?$/.test(s))return U.pd(+s);
+    let m=U.N(s).match(/^([A-Z]{3})[-\/ .]?(\d{2,4})$/);
+    if(m&&U.MES[m[1]]!=null){let y=+m[2];if(y<100)y+=2000;return`${y}-${String(U.MES[m[1]]+1).padStart(2,'0')}-01`}
+    if(/^\d{4}-\d{2}-\d{2}/.test(s))return s.slice(0,10);
+    m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);if(m)return`${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
+    return'';
+  },
+  days:(a,b)=>Math.round((Date.parse(a)-Date.parse(b))/864e5),
+  fmtD:d=>d?`${d.slice(8,10)}/${d.slice(5,7)}/${d.slice(0,4)}`:'—',
+  fmtDT:t=>t?new Date(t).toLocaleString('pt-BR'):'—',
+  fmtR:v=>v==null?'—':'R$ '+(+v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+' Mi',
+  fmtN:(v,d=1)=>v==null||isNaN(v)?'—':(+v).toLocaleString('pt-BR',{maximumFractionDigits:d}),
+  ufOf:e=>U.N(e).replace(/^EQTL[\s\-_]*/,'').replace(/[^A-Z]/g,'').slice(0,2),
+  seName:se=>U.N(se).replace(/^SE\s+/,'').replace(/[´'`’]/g,' ').replace(/\s+/g,' ').trim(),
+  slug:se=>U.seName(se).replace(/[^A-Z0-9]/g,'').slice(0,20)||'SE',
+  fk(t){const m=U.N(t).match(/([A-Z]?)0*(\d+)$/);return m?m[1]+m[2]:''},
+  sem:d=>d==null?'n':d<0?'neg':d<=30?'g':d<=60?'o':'r',
+  SEMC:{g:'#0B9454',o:'#E87722',r:'#B92927',neg:'#B92927',n:'#9AA3B2'},
+  SEMB:{g:'b-g',o:'b-o',r:'b-r',neg:'b-r',n:'b-x'},
+  dBadge(d){return`<span class="badge ${U.SEMB[U.sem(d)]}">${d==null?'—':(d<0?'⚠ ':'')+d+'d'}</span>`},
+  stBadge(s){const c={Sugerida:'b-y','Em Ajuste':'b-o',Confirmada:'b-g',Rejeitada:'b-r',Encerrada:'b-x'}[s]||'b-x';return`<span class="badge ${c}">${U.esc(s)}</span>`},
+  conf:s=>s>=80?['Alta','b-g']:s>=60?['Média','b-y']:['Baixa','b-r'],
+  mode(a){const c={};let b='',n=0;a.forEach(x=>{c[x]=(c[x]||0)+1;if(c[x]>n){n=c[x];b=x}});return b},
+  clone:o=>JSON.parse(JSON.stringify(o)),
+  tr:(s,n)=>{s=String(s??'');return s.length>n?s.slice(0,n-1)+'…':s},
+  dl(name,data,type){const a=document.createElement('a');a.href=URL.createObjectURL(data instanceof Blob?data:new Blob([data],{type}));a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1500)},
+  stampF:()=>new Date().toISOString().slice(0,16).replace(/[:T]/g,'-'),
+  debounce(fn,ms){let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms)}},
+  has:n=>typeof window[n]!=='undefined'||(()=>{try{return typeof eval(n)!=='undefined'}catch(e){return false}})()
+};
 
-<div id="empty">📂 Importe o arquivo <b>ALIMENTADORES MT_FIN_APURACAO.xlsx</b> para começar</div>
+/* ---------- Store: LocalStorage por coleção ---------- */
+let S={};
+const Store={
+  P:'eqtl.gi.v2.',
+  C:['meta','obrasAT','obrasRD','interfaces','links','deParaSE','auditoria','config','plans','imports'],
+  load(){const o={};this.C.forEach(c=>{try{o[c]=JSON.parse(localStorage.getItem(this.P+c))}catch(e){o[c]=null}});return o},
+  save(){this.C.forEach(c=>{try{localStorage.setItem(this.P+c,JSON.stringify(S[c]))}catch(e){UI.toast('Falha ao gravar LocalStorage: '+e.message,'r')}})},
+  clear(){this.C.forEach(c=>localStorage.removeItem(this.P+c))},
+  defConfig:()=>({w:{se:40,mun:20,reg:15,ali:15,kw:10},thr:60,dark:false,filters:{},profile:'Administrador',seq:{}}),
+  init(){
+    const d=this.load();
+    S={meta:d.meta||{},obrasAT:d.obrasAT||{},obrasRD:d.obrasRD||{},interfaces:d.interfaces||{},links:d.links||{},deParaSE:d.deParaSE||{},
+       auditoria:d.auditoria||[],config:Object.assign(this.defConfig(),d.config||{}),plans:d.plans||{},imports:d.imports||[]};
+    S.config.w=Object.assign(this.defConfig().w,S.config.w||{});
+    return Object.keys(S.obrasAT).length+Object.keys(S.obrasRD).length>0;
+  }
+};
 
-<!-- ===== ABA PAINEL ===== -->
-<div class="wrap" id="app" style="display:none">
-  <div class="chips" id="chips"></div>
-  <div class="kpis" id="kpis"></div>
-  <div class="card"><h3>Fotografia atual (apuração) <small>clique na distribuidora</small></h3><div class="cbox"><canvas id="cf"></canvas></div></div>
-  <div class="g64">
-    <div class="card"><h3>Cronograma de energização de bays sem alimentador</h3><div class="cbox"><canvas id="cb"></canvas></div></div>
-    <div class="card"><h3>Bays energizados sem carga</h3><div class="tbl" id="tb"></div></div>
-  </div>
-  <div class="g64">
-    <div class="card"><h3>Acurácia RD x AT (alimentadores) <small>clique na classe</small></h3><div class="cbox"><canvas id="ca"></canvas></div></div>
-    <div class="card"><h3>Acurácia por SE</h3><div class="tbl" id="ta"></div></div>
-  </div>
-  <div class="g2">
-    <div class="card"><h3>Cascata por status <small>clique para filtrar</small></h3><div class="cbox"><canvas id="cw"></canvas></div></div>
-    <div class="card"><h3>Curva mensal AT x RD <small>clique no mês</small></h3><div class="cbox"><canvas id="cm"></canvas></div></div>
-  </div>
-  <div class="card">
-    <h3>Gantt: AT (Proj. Energ.) x RD (Alimentador) <small id="gc"></small></h3>
-    <div class="leg" id="lg"></div>
-    <div class="gantt" id="gt"></div>
-  </div>
-</div>
+/* ---------- Seed: dados de base_teste-interface.xlsx ---------- */
+const Seed={
+  AT:[
+  ['AL','C','AMPLIAÇÃO DE POTÊNCIA','AL-2630808CAT0.A','SE COSTA DOS CORAIS','-','CDC','13,8',0,1,34.17,'A','','','E',46362,2026],
+  ['AL','C','AMPLIAÇÃO DE POTÊNCIA','AL-2630808CAT0.B','SE POLO CLOROQUÍMICO','-','PCA','13,8',0,1,4.17,'A','','','P',46449,2027],
+  ['AL','C','AMPLIAÇÃO DE SUBESTAÇÃO','AL-2530808CAT0.D','SE INHAPI','-','INP','13,8',0,1,100,'S',46287,'01Y2','C',46255,2026],
+  ['AL','C','AMPLIAÇÃO DE SUBESTAÇÃO','AL-2530808CAT0.F','SE CIDADE UNIVERSITÁRIA','-','CDU','13,8',0,1,100,'S',46050,'11M9','C',46050,2026],
+  ['AL','C','ENTRADA DE LINHA','AL-2530808CAT0.E','SE INHAPI','-','INP','13,8',0,1,100,'S',46287,'01Y5','C',46255,2026],
+  ['AL','C','ENTRADA DE LINHA','AL-2630808CAT0.C','SE PÃO DE AÇÚCAR','-','PDA','13,8',0,1,0,'A','','','P',46499,2027],
+  ['AL','P','AMPLIAÇÃO DE POTÊNCIA','AL-2630208AMP0.A','SE POLO CLOROQUÍMICO','04.01.101.01.24.V01','PCA','13,8',0,1,4.17,'A','','','P',46581,2027],
+  ['AL','P','AMPLIAÇÃO DE POTÊNCIA','AL-2630208AMP0.C','SE PALMEIRA DOS ÍNDIOS','04.01.005.01.25.V01','PMI','13,8',0,1,0,'A','','','P',46475,2027],
+  ['AL','P','BAY','AL-2530008BAY0.B','SE DELMIRO GOUVEIA','','DMG','13,8',0,1,100,'S',46181,'01Y1','C',46221,2026],
+  ['AL','P','BAY','AL-2530008BAY0.E','SE SERRARIA','','SRR','13,8',1,1,8.33,'A','','','E',46421,2027],
+  ['AL','P','BAY','AL-2630008BAY0.B','SE INHAPI','04.01.012.01.25.V01','INP','13,8',0,1,100,'S',46287,'01Y4','C',46255,2026],
+  ['AL','P','BAY','AL-2630008BAY0.C','SE MARITUBA','04.01.013.01.25.V01','MTB','13,8',0,1,100,'S',46146,'11Y7','C',46150,2026],
+  ['AL','P','BAY','AL-2630008BAY0.D','SE UNIÃO DOS PALMARES','04.01.014.01.25.V01','UPM','13,8',0,1,90,'S',46255,'','E',46255,2026],
+  ['AL','P','BAY','AL-2630008BAY0.E','SE OLHO D´ÁGUA DAS FLORES','04.01.015.01.25.V01','ODF','13,8',0,1,80,'A','','','E',46258,2026],
+  ['AL','P','BAY','AL-2630008BAY0.H','SE IPIOCA','04.01.020.01.25.V01','IPA','13,8',0,1,100,'S',46094,'11Y4','C',46062,2026],
+  ['AL','P','NOVA SE','AL-2361108GTA0.A','SE GRUTA','','GTA','13,8',0,8,93.5,'A','','','E',46402,2027],
+  ['AL','P','NOVA SE','AL-2560808CNO0.A','SE CÂNIONS','','CNO','13,8',0,3,65,'A','','','E',46337,2026],
+  ['AL','P','NOVA SE','AL-2361208ARQ0.B','SE ARAPIRACA IV','','ARQ','13,8',0,6,100,'S',46356,'01Y1, 01Y2, 01Y3, 01Y4, 01Y5, 01Y6','C',46356,2026],
+  ['AP','P','AMPLIAÇÃO DE POTÊNCIA','AP-2530208AMP0.A','SE CENTRAL','','CEN','34,5',0,1,100,'C',46009,'09F1','C',46009,2025],
+  ['AP','P','AMPLIAÇÃO DE POTÊNCIA','AP-2630208AMP0.A','SE EQUATORIAL','06.01.030.01.24.V01','EQT','13,8',0,3,100,'C',46265,'','C',46265,2026],
+  ['AP','P','NOVA SE','AP-2560308AMA0.B','SE AMAZONAS','','AMZ','13,8',0,5,100,'S',46166,'','C',46203,2026],
+  ['AP','P','AMPLIAÇÃO DE POTÊNCIA','AP-2530208AMP0.A','SE CENTRAL','','CEN','34,5',0,1,100,'S',46009,'09F2','C',46009,2025],
+  ['MA','C','AMPLIAÇÃO DE POTÊNCIA','MA-2430808CAT0.A','SE PERITORÓ II','','PRD','13,8',0,2,100,'C',46038,'11C1, 11C2','C',46038,2026],
+  ['MA','C','AMPLIAÇÃO DE SUBESTAÇÃO','MA-2630808CAT0.A','SE RIACHÃO','','RCO','34,5',0,1,0,'A','','','P',46473,2027],
+  ['MA','C','BANCO DE CAPACITORES','MA-2430808CAT0.U','SE SERRA DO PENITENTE','','SPT','34,5',0,1,100,'S',46120,'19F4','C',46193,2026],
+  ['MA','C','BAY','MA-2630808CAT0.D','SE ILHA DE BALSAS','','IBS','34,5',0,1,0,'A','','','P',46529,2027],
+  ['MA','C','BAY','MA-2630808CAT0.E','SE BARRA DO CORDA','','BDC','13,8',0,1,0,'A','','','P',46554,2027],
+  ['MA','C','ENTRADA DE LINHA','MA-2530808CAT0.H','SE SÃO JOSÉ DOS BASÍLIOS','','SJB','34,5',0,1,83.33,'A','','','E',46325,2026],
+  ['MA','P','AMPLIAÇÃO DE POTÊNCIA','MA-2530208AMP0.C','SE SÃO MARCOS','','SMC','13,8',1,2,33.33,'A','','','E',46346,2026],
+  ['MA','P','AMPLIAÇÃO DE POTÊNCIA','MA-2530208AMP0.E','SE BALSAS','','BLS','13,8',0,2,100,'S',45947,'11W1, 11C9','C',45947,2025],
+  ['MA','P','AMPLIAÇÃO DE POTÊNCIA','MA-2530208AMP0.F','SE COHATRAC','','CHT','13,8',0,2,95,'A','','','E',46315,2026],
+  ['MA','P','AMPLIAÇÃO DE POTÊNCIA','MA-2530208AMP0.I',"SE OLHO D'ÁGUA",'','ODA','13,8',0,4,100,'S',46280,'11C6, 11C7, 11C8, 11C9','C',46280,2026]
+  ],
+  RD:[
+  [5,'MA','NORTE','NORTE','DIS','NOVO ALIMENTADOR CHT-01C7 13,8 KV | NOVO ALIMENTADOR CHT-01C8 13,8 KV',2.234745763,0,'Concluída','Não aplicavel','Não Iniciada','jul-26','ago-26','Sem info'],
+  [7,'MA','CENTRO','CENTRO','DIS','NOVO ALIMENTADOR PDS-01C8 13,8 KV',1.068568406,0.243644263,'Concluída','Não aplicavel','Atrasada','dez-26','ago-26','Sem info'],
+  [62,'MA','NORTE','NORTE','DIS','NOVO ALIMENTADOR MAR-01C3 13,8 KV',0.029744055,0,'Concluída','Não aplicavel','Não Iniciada','dez-26','set-26','Sem info'],
+  [63,'MA','CENTRO','CENTRO','DIS','NOVO ALIMENTADOR ARI-01C4 13,8 KV - CARRY OVER','',0,'Concluída','Concluido','Não Iniciada','nov-26','ago-26','Sem info'],
+  [64,'MA','NORTE','NORTE','DIS','NOVO ALIMENTADOR ODA-01C6 13,8 KV - CARRY OVER','',0,'Concluída','Não aplicavel','Não Iniciada','jun-26','jun-26','Sem info'],
+  [65,'MA','NORTE','NORTE','DIS','NOVO ALIMENTADOR ODA-01C8 13,8 KV - CARRY OVER','',0,'Concluída','Não aplicavel','Não Iniciada','jun-26','jun-26','Sem info'],
+  [66,'MA','NORTE','NORTE','DIS','NOVO ALIMENTADOR ODA-01C9 13,8 KV - CARRY OVER','',0,'Concluída','Não aplicavel','Não Iniciada','jun-26','jun-26','Sem info'],
+  [67,'MA','NORTE','NORTE','DIS','NOVO ALIMENTADOR SMC-01C5 13,8 KV - CARRY OVER','',0,'Concluída','Não aplicavel','Não Iniciada','ago-26','jun-26','Sem info'],
+  [68,'MA','NORTE','NORTE','DIS','NOVO ALIMENTADOR STT-01C7 13,8 KV - CARRY OVER','',0,'Concluída','Não aplicavel','Não Iniciada','abr-26','jun-26','Sem info'],
+  [327,'AL','UNICA','OESTE','DIS','NOVO(s) AL(s) DA NOVA SE - CNS-C3 (2,96 KM)',2.87,2.895430402,'Concluída','Concluido','Atrasada','fev-27','set-26','Sem info'],
+  [329,'AL','UNICA','LESTE','DIS','NOVO(s) AL(s) - IPA-Y4',2.6,2.959897128,'Em Projeto','Em estudo','Em Execução','dez-26','dez-26','Sem info'],
+  [330,'AL','UNICA','OESTE','DIS','NOVA SE - ARQ-C1 (7,06 KM)',2.56,1.406929079,'Concluída','Concluido','Em Execução','jan-27','dez-26','Sem info'],
+  [331,'AL','UNICA','OESTE','DIS','NOVA SE - ARQ-C4 (6,34 KM)',2.5,0.701571076,'Concluída','Em andamento','Em Execução','jan-27','dez-26','Sem info'],
+  [332,'AL','UNICA','OESTE','DIS','NOVA SE - ARQ-C5 (6,57 KM)',2.26,0,'Concluída','Em andamento','Em Execução','jan-27','dez-26','Sem info'],
+  [333,'AL','UNICA','OESTE','DIS','NOVO(s) AL(s) - MTB-Y7',2.11,0,'Em Projeto','Em estudo','Não Iniciada','dez-26','dez-26','Sem info'],
+  [336,'AL','UNICA','OESTE','MEL','MELHORAMENTO - MTB-Y7',1.69,0,'Em Projeto','Em estudo','Não Iniciada','Cadastrar','nov-26','Sem info'],
+  [341,'AL','UNICA','OESTE','DIS','NOVO(s) AL(s) - DMG-Y7',0.75,0.29664368,'Concluída','Concluido','Atrasada','mai-27','ago-26','Sem info'],
+  [345,'AL','UNICA','OESTE','BRT','BRT 200 A - MTB-Y7',0.58,0,'Em Projeto','Em estudo','Não Iniciada','Cadastrar','dez-26','Sem info'],
+  [346,'AL','UNICA','OESTE','DIS','NOVA SE - ARQ-C6 (1,12 KM)',0.56,0.243857624,'Concluída','Em andamento','Em Execução','jan-27','dez-26','Sem info'],
+  [349,'AL','UNICA','OESTE','DIS','NOVA SE - ARQ-C3 (1,71 KM)',0.45,0.833176441,'Concluída','Concluido','Em Execução','jan-27','dez-26','Sem info'],
+  [350,'AL','UNICA','OESTE','DIS','NOVA SE - ARQ-C2 (1,87 KM)',0.39,0,'Concluída','Concluido','Em Execução','jan-27','dez-26','Sem info'],
+  [353,'AL','UNICA','OESTE','BRT','BRT 200 A - CNS-C3',0.29,0,'Em Projeto','Em estudo','Atrasada','Cadastrar','set-26','Sem info'],
+  [354,'AL','UNICA','OESTE','BRT','BRT 300 A - MTB-Y7',0.29,0,'Em Projeto','Em estudo','Não Iniciada','Cadastrar','dez-26','Sem info'],
+  [355,'AL','UNICA','OESTE','BRT','BRT 300 A - MTB-Y7',0.29,0,'Em Projeto','Em estudo','Não Iniciada','Cadastrar','dez-26','Sem info'],
+  [356,'AL','UNICA','OESTE','BRT','BRT 200 A - CNS-C1',0.27,0.28775561,'Em Projeto','Em estudo','Em Execução','Cadastrar','out-26','Sem info'],
+  [357,'AL','UNICA','OESTE','BRT','BRT 200 A - CNS-C2',0.27,0,'Em Projeto','Em estudo','Não Iniciada','Cadastrar','out-26','Sem info'],
+  [358,'AL','UNICA','OESTE','MEL','MELHORAMENTO DMG-Y5',0.13,0.00521917,'Em Projeto','Em estudo','Em Execução','Cadastrar','nov-26','Sem info'],
+  [359,'AL','UNICA','OESTE','MEL','MELHORAMENTO INP-Y4',0.13,0,'Em Projeto','Em estudo','Não Iniciada','Cadastrar','nov-26','Sem info'],
+  [360,'AL','UNICA','OESTE','DIS','CONSTRUÇÃO TRECHO MTB-Y7',0.1,0,'Em Projeto','Em estudo','Não Iniciada','Cadastrar','nov-26','Sem info'],
+  [361,'AL','UNICA','OESTE','MEL','MELHORAMENTO - MTB-Y7',0.1,0,'Em Projeto','Em estudo','Não Iniciada','Cadastrar','nov-26','Sem info'],
+  [363,'AL','UNICA','LESTE','MEL','MELHORAMENTO - IPA-Y4',0.07,0,'Em Projeto','Em estudo','Não Iniciada','Cadastrar','dez-26','Sem info'],
+  [369,'AL','UNICA','OESTE','DIS','CONSTRUÇÃO TRECHO MTB-Y2',0.01,0,'Em Projeto','Em estudo','Não Iniciada','Cadastrar','jun-26','Sem info'],
+  [447,'AP','AMAPÁ','UNICA','DIS','RECAPACITAÇÃO OIAPOQUE',1.1500102,0,'Concluída','Não aplicavel','Atrasada','Cadastrar','jan-26','jan-26'],
+  [458,'AP','AMAPÁ','UNICA','BRT','BRT 200 A ALIMENTADOR TTG-01Y1',0.3027867,0,'Concluída','Não aplicavel','Atrasada','Cadastrar','jun-26','Sem info'],
+  [461,'AP','AMAPÁ','UNICA','MEL','RECAPACITAÇÃO DE TRECHO NO ALIMENTADOR AMZ-001',0.2457738,0,'Concluída','Não aplicavel','Não Iniciada','Cadastrar','nov-26','Sem info'],
+  [465,'AP','AMAPÁ','UNICA','MEL','RECAPACITAÇÃO DE TRECHO NO ALIMENTADOR AMZ-002',0.1773189,0,'Concluída','Não aplicavel','Atrasada','Cadastrar','ago-26','Sem info'],
+  [470,'AP','AMAPÁ','UNICA','BCP','BC 600 KVAR NO ALIMENTADOR AMZ-001',0.0479582,0.02274284,'Concluída','Não aplicavel','Atrasada','Cadastrar','jun-26','Sem info']
+  ],
+  MUN:{INP:'INHAPI',CDU:'MACEIÓ',PDA:'PÃO DE AÇÚCAR',PMI:'PALMEIRA DOS ÍNDIOS',DMG:'DELMIRO GOUVEIA',SRR:'MACEIÓ',UPM:'UNIÃO DOS PALMARES',ODF:"OLHO D'ÁGUA DAS FLORES",IPA:'MACEIÓ',GTA:'MACEIÓ',ARQ:'ARAPIRACA',PCA:'MARECHAL DEODORO',CEN:'MACAPÁ',EQT:'MACAPÁ',PRD:'PERITORÓ',RCO:'RIACHÃO',IBS:'BALSAS',BDC:'BARRA DO CORDA',SJB:'SÃO JOSÉ DOS BASÍLIOS',SMC:'SÃO LUÍS',BLS:'BALSAS',CHT:'SÃO LUÍS',ODA:'SÃO LUÍS'},
+  ALIAS:{CNO:['CNS']},
+  atRows(){const ST={A:'OBRA EM ANDAMENTO',S:'ENERGIZADO SEM CARGA',C:'ENERGIZADO COM CARGA'},FA={E:'EXECUÇÃO',P:'ETAPA PRELIMINAR',C:'CONCLUÍDO'};
+    return this.AT.map(a=>({'EMPRESA':'EQTL '+a[0],'SEGMENTO':'SE','DEMANDANTE':a[1]==='C'?'Cliente':'Planejamento','TIPO DE OBRA':a[2],'PEP':a[3],'INSTALAÇÃO':a[4],'ID CAPEX':a[5],'SIGLA':a[6],
+      'CÓDIGO DO MÓDULO':`${a[0]}.S.ELT.${a[7]==='34,5'?9:1}.${a[8]?'C':'A'}`,'FUNÇÃO MÓDULO':'ENTRADA DE LINHA','MÓDULO':`ENTRADA DE LINHA ${a[7]}kV ${a[8]?'CUBÍCULO BS':'c/ DJ'}`,
+      'QTDE':a[9],'AVANÇO FÍSICO AT':a[10]+'%','STATUS SE':ST[a[11]],'DATA DA ENERGIZAÇÃO':a[12],'EQUIPAMENTO':a[13],'FASE DA OBRA AT':FA[a[14]],'PROJ DE ENERG':a[15],'ANO ENTREGA':a[16]}))},
+  rdRows(){return this.RD.map(r=>({'ID_Obra':r[0],'PEP':'','Distr':'EQTL-'+r[1],'Superint':r[2],'Regional':r[3],'PI':r[4],'Obra (Descrição Resumida)':r[5],'Prev AT':r[11],
+      'Custo Mod. (R$ Mi)':r[6],'Disposto (R$ Mi)':r[7],'Status_Proj':r[8],'Status_Licenc':r[9],'Status_Exec':r[10],'Energ_Prevista':r[12],'Energ_Realizada':r[13],'Observação':''}))}
+};
 
-<!-- ===== ABA FORMULÁRIO ===== -->
-<div class="wrap" id="frm" style="display:none">
-  <div class="g46">
-    <div class="card">
-      <h3>Empreendimento <small id="feC"></small></h3>
-      <input id="fe" list="lEF" placeholder="🔎 PEP AT ou nome da SE..."><datalist id="lEF"></datalist>
-      <div id="feInfo"><p>Selecione um empreendimento.</p></div>
-    </div>
-    <div class="card" id="fp"><h3>Atualização do PEP</h3><p>Selecione um PEP AT ou RD ao lado.</p></div>
-  </div>
-</div>
+/* ---------- Extração de sigla/alimentador (o Módulo 2 reutiliza) ---------- */
+const Ext={
+  run(desc){
+    const d=U.N(desc),re=/(?:^|[^A-Z0-9])([A-Z]{2,4})-([0-9]{0,2}[A-Z]?[0-9]{1,3})(?![A-Z0-9])/g;let m,sig='',keys=[];
+    while((m=re.exec(d))){if(['KV','SE','AL'].includes(m[1]))continue;if(!sig)sig=m[1];if(m[1]===sig){const k=U.fk(m[2]);if(k&&!keys.includes(k))keys.push(k)}re.lastIndex--}
+    return{sigla:sig,keys};
+  }
+};
+
+/* ---------- Parser: normalização das linhas AT/RD ---------- */
+const Parser={
+  g(r,...names){
+    if(!r.__k)Object.defineProperty(r,'__k',{value:Object.fromEntries(Object.keys(r).map(k=>[U.N(k).replace(/[^A-Z0-9]/g,''),k])),enumerable:false});
+    for(const n of names){const k=r.__k[U.N(n).replace(/[^A-Z0-9]/g,'')];if(k!=null&&r[k]!==''&&r[k]!=null)return r[k]}
+    return'';
+  },
+  cnt:()=>({linhas:0,dates:0,nulls:0,consol:0,invalid:0}),
+  countDate(c,x){if(x!==''&&x!=null){if(U.pd(x))c.dates++;else c.nulls++}},
+  at(rows,c,out={}){
+    rows.forEach(r=>{
+      c.linhas++;const pep=String(this.g(r,'PEP')).trim();if(!pep||U.isNull(pep)){c.invalid++;return}
+      const emp=String(this.g(r,'EMPRESA')).trim(),rR=this.g(r,'DATA DA ENERGIZAÇÃO'),rP=this.g(r,'PROJ DE ENERG');
+      this.countDate(c,rR);this.countDate(c,rP);
+      const dR=U.pd(rR),dP=U.pd(rP),cap=this.g(r,'ID CAPEX');if(cap!==''&&U.isNull(cap))c.nulls++;
+      const eqs=String(this.g(r,'EQUIPAMENTO')).split(/[,;]+/).map(s=>U.N(s)).filter(s=>s&&!U.isNull(s));
+      const mod={cod:String(this.g(r,'CÓDIGO DO MÓDULO')),funcao:String(this.g(r,'FUNÇÃO MÓDULO')),modulo:String(this.g(r,'MÓDULO')),qtd:U.num(this.g(r,'QTDE'))||1,equip:eqs.join(', ')};
+      const o=out[pep];
+      if(o){c.consol++;o.modulos.push(mod);eqs.forEach(e=>{if(!o.equip.includes(e))o.equip.push(e)});o.keys=[...new Set(o.equip.map(U.fk).filter(Boolean))];
+        const d=dR||dP;if(d&&d>o.dEn)o.dEn=d;if(dR)o.tipoData='Real';return}
+      out[pep]={pep,empresa:emp,uf:U.ufOf(emp),seg:String(this.g(r,'SEGMENTO')),dem:String(this.g(r,'DEMANDANTE')),tipo:String(this.g(r,'TIPO DE OBRA')),
+        se:String(this.g(r,'INSTALAÇÃO')).trim(),sigla:U.N(this.g(r,'SIGLA')),capex:U.isNull(cap)?'':String(cap),modulos:[mod],equip:eqs,
+        keys:[...new Set(eqs.map(U.fk).filter(Boolean))],avanco:U.pct(this.g(r,'AVANÇO FÍSICO AT'))??0,statusSE:String(this.g(r,'STATUS SE')),
+        fase:String(this.g(r,'FASE DA OBRA AT')),dEn:dR||dP,tipoData:dR?'Real':'Projetada',ano:String(this.g(r,'ANO ENTREGA')),
+        invPrev:null,invReal:null,resp:'',dProj:'',dLic:'',dConst:'',upd:U.now()};
+    });
+    return out;
+  },
+  rd(rows,c,out={}){
+    rows.forEach(r=>{
+      c.linhas++;const desc=String(this.g(r,'Obra (Descrição Resumida)','Obra','Descrição')).trim();if(!desc){c.invalid++;return}
+      let id=String(this.g(r,'ID_Obra','ID')).trim();if(!id)id='N'+Math.random().toString(36).slice(2,8);
+      if(out[id]){c.consol++;id=id+'-'+c.consol}
+      const d=String(this.g(r,'Distr','Distribuidora')).trim(),eR=this.g(r,'Energ_Realizada'),eP=this.g(r,'Energ_Prevista'),pa=this.g(r,'Prev AT');
+      [eR,eP,pa].forEach(x=>this.countDate(c,x));
+      const pep=String(this.g(r,'PEP')).trim(),ex=Ext.run(desc),dr=U.pd(eR),dp=U.pd(eP);
+      out[id]={id,distr:d,uf:U.ufOf(d),superint:String(this.g(r,'Superint')),regional:String(this.g(r,'Regional')),pi:U.N(this.g(r,'PI')),desc,
+        sigla:ex.sigla,keys:ex.keys,peps:U.isNull(pep)?[]:pep.split(/[;,]/).map(s=>s.trim()).filter(Boolean),dEn:dr||dp,tipoData:dr?'Real':'Prevista',
+        prevAT:U.pd(pa),custo:U.num(this.g(r,'Custo Mod. (R$ Mi)','Custo Mod','Custo')),disposto:U.num(this.g(r,'Disposto (R$ Mi)','Disposto')),
+        stProj:String(this.g(r,'Status_Proj')),stLic:String(this.g(r,'Status_Licenc')),stExec:String(this.g(r,'Status_Exec')),
+        carry:/CARRY\s*OVER/.test(U.N(desc)),resp:'',obs:String(this.g(r,'Observação')),upd:U.now()};
+    });
+    return out;
+  }
+};
+
+/* ---------- Audit: log FIFO 5.000 ---------- */
+const Audit={
+  sh:v=>v==null?'':typeof v==='object'?JSON.stringify(v).slice(0,300):String(v).slice(0,300),
+  log(acao,ent,id,antes,depois){S.auditoria.unshift({t:U.now(),u:S.config.profile,acao,ent,id:String(id),antes:this.sh(antes),depois:this.sh(depois)});if(S.auditoria.length>5000)S.auditoria.length=5000}
+};
+
+/* ---------- Perm: perfis simulados ---------- */
+const Perm={
+  R:{'Diretoria':['export'],'Planejamento':['export','confirm','reject','reopen','adjust','motor','gov'],'Engenharia AT':['export','editAT','gov'],'Engenharia RD':['export','editRD','gov'],'Administrador':['*']},
+  can(a){const r=this.R[S.config.profile]||[];return r.includes('*')||r.includes(a)},
+  dis(a){return this.can(a)?'':'disabled title="Sem permissão para o perfil atual"'},
+  guard(a){if(this.can(a))return true;UI.toast('Perfil "'+S.config.profile+'" sem permissão para esta ação','r');return false}
+};
+
+/* ---------- UI: modal, drawer, toast, tooltip ---------- */
+const UI={
+  _g:0,
+  modal(o){
+    this._g++;const g=this._g;U.$('mTitle').textContent=o.title||'';U.$('mBody').innerHTML=o.body||'';const f=U.$('mFoot');f.innerHTML='';
+    (o.buttons||[{t:'Fechar',c:'gh'}]).forEach(b=>{const e=document.createElement('button');e.className='btn '+(b.c||'');e.textContent=b.t;
+      e.onclick=()=>{if(b.fn&&b.fn()===false)return;if(UI._g===g)UI.close()};f.appendChild(e)});
+    document.querySelector('#modal .mbox').style.width=o.wide?'min(1050px,96vw)':'min(580px,94vw)';U.$('modal').classList.add('on');
+  },
+  close(){U.$('modal').classList.remove('on')},
+  ask(title,msg,ok,okT='Confirmar',c='r'){this.modal({title,body:`<p>${msg}</p>`,buttons:[{t:'Cancelar',c:'gh'},{t:okT,c,fn:ok}]})},
+  justify(title,cb,label='Justificativa (obrigatória)'){
+    this.modal({title,body:`<label class="fl">${label}</label><textarea id="mJust" rows="4"></textarea>`,buttons:[{t:'Cancelar',c:'gh'},{t:'Confirmar',c:'p',fn:()=>{const v=U.$('mJust').value.trim();if(v.length<5){UI.toast('Informe a justificativa (mínimo 5 caracteres)','y');return false}cb(v)}}]});
+    setTimeout(()=>U.$('mJust')?.focus(),50);
+  },
+  input(title,label,cb,val='',type='text'){
+    this.modal({title,body:`<label class="fl">${label}</label><input id="mIn" type="${type}" value="${U.esc(val)}">`,buttons:[{t:'Cancelar',c:'gh'},{t:'OK',c:'p',fn:()=>{const v=U.$('mIn').value.trim();if(!v){UI.toast('Valor obrigatório','y');return false}cb(v)}}]});
+    setTimeout(()=>U.$('mIn')?.focus(),50);
+  },
+  toast(t,k='g'){const e=U.$('toast');e.textContent=t;e.style.background={g:'#0B9454',y:'#EAA02E',r:'#B92927',b:'#065DAC'}[k];e.style.color=k==='y'?'#222':'#fff';e.style.display='block';clearTimeout(e._t);e._t=setTimeout(()=>e.style.display='none',3200)},
+  drawer(html){const d=U.$('drawer');d.innerHTML=html;d.classList.add('on')},
+  closeDrawer(){U.$('drawer').classList.remove('on')},
+  tip(e,html){const t=U.$('tip');t.innerHTML=html;t.style.display='block';t.style.left=Math.min(e.clientX+16,innerWidth-360)+'px';t.style.top=Math.min(e.clientY+16,innerHeight-t.offsetHeight-10)+'px'},
+  tipOff(){U.$('tip').style.display='none'}
+};
+
+/* ---------- App: kernel com registro de abas e ganchos ---------- */
+const App={
+  T:[],H:{boot:[],afterLoad:[],render:[],badges:[]},cur:'',dirty:false,
+  /* Módulos chamam App.reg('id','Rótulo',{render(){...}}) */
+  reg(id,label,obj,order=99){this.T.push({id,label,obj,order});this.T.sort((a,b)=>a.order-b.order)},
+  on(h,fn){this.H[h].push(fn)},
+  fire(h,...a){this.H[h].forEach(f=>{try{f(...a)}catch(e){console.error(h,e)}})},
+  seed(){
+    const c=Parser.cnt();S.obrasAT=Parser.at(Seed.atRows(),c);S.obrasRD=Parser.rd(Seed.rdRows(),c);
+    S.meta={schema:2,file:'base_teste-interface.xlsx',importedAt:U.now(),user:S.config.profile,stats:c};
+    Audit.log('Carga inicial','Base','seed',null,`${Object.keys(S.obrasAT).length} AT / ${Object.keys(S.obrasRD).length} RD`);
+  },
+  init(){
+    const had=Store.init();if(!had)this.seed();
+    this.fire('afterLoad',!had);Store.save();
+    document.body.classList.toggle('dark',!!S.config.dark);
+    const p=U.$('profile');p.innerHTML=Object.keys(Perm.R).map(r=>`<option ${r===S.config.profile?'selected':''}>${r}</option>`).join('');
+    p.onchange=()=>{S.config.profile=p.value;Store.save();UI.toast('Perfil: '+p.value,'b');this.render()};
+    document.addEventListener('keydown',e=>{if(e.key==='Escape'){UI.close();UI.closeDrawer();U.$('gres').style.display='none'}});
+    U.$('modal').addEventListener('click',e=>{if(e.target.id==='modal')UI.close()});
+    U.$('main').innerHTML=(this.T.length?this.T:[{id:'base'}]).map(t=>`<section class="tab" id="t-${t.id}"></section>`).join('');
+    this.fire('boot');
+    this.go(this.T[0]?.id||'base');
+  },
+  nav(){
+    const b={};this.fire('badges',b);
+    U.$('nav').innerHTML=(this.T.length?this.T:[{id:'base',label:'Base carregada'}]).map(t=>`<button class="${t.id===this.cur?'on':''}" onclick="App.go('${t.id}')">${t.label}${b[t.id]?`<span class="cnt">${b[t.id]}</span>`:''}</button>`).join('');
+  },
+  go(id){
+    const t=this.T.find(x=>x.id===id);
+    if(this.dirty&&id!==this.cur){UI.modal({title:'Alterações não salvas',body:'<p>Há edições pendentes nesta aba. Deseja descartá-las?</p>',buttons:[{t:'Continuar editando',c:'gh'},{t:'Descartar',c:'r',fn:()=>{this.dirty=false;this.go(id)}}]});return}
+    this.cur=id;document.querySelectorAll('.tab').forEach(s=>s.classList.toggle('on',s.id==='t-'+id));
+    U.$('gres').style.display='none';this.render();window.scrollTo({top:0});
+  },
+  render(){
+    this.stamp();this.fire('render');this.nav();
+    const t=this.T.find(x=>x.id===this.cur);
+    if(t)t.obj.render();else this.baseSummary();
+  },
+  stamp(){U.$('stamp').textContent=`Base: ${S.meta.file||'—'} • importada em ${U.fmtDT(S.meta.importedAt)}`},
+  /* Tela de verificação do Módulo 1 (some quando o Módulo 2 em diante registram abas) */
+  baseSummary(){
+    const A=Object.values(S.obrasAT),R=Object.values(S.obrasRD),st=S.meta.stats||{};
+    const ufA=[...new Set(A.map(a=>a.uf))].sort(),ufR=[...new Set(R.map(r=>r.uf))].sort();
+    U.$('t-base').innerHTML=`<div class="grid g6">
+      ${[['Obras AT (PEPs)',A.length,'--azul'],['Obras RD',R.length,'--laranja'],['SEs distintas',new Set(A.map(a=>a.sigla)).size,'--roxo'],
+        ['PEPs consolidados',st.consol??'—','--amarelo'],['Datas convertidas',st.dates??'—','--verde'],['Nulos tratados',st.nulls??'—','--vermelho']]
+        .map(([l,v,c])=>`<div class="kpi" style="border-top-color:var(${c})"><div class="l">${l}</div><div class="v" style="color:var(${c})">${v}</div></div>`).join('')}</div><br>
+      <div class="card"><h3>✅ Módulo 1 (Núcleo) operacional</h3>
+        <p>Distribuidoras com AT: <b>${ufA.join(', ')}</b> • Distribuidoras com RD: <b>${ufR.join(', ')}</b></p>
+        <p class="mut">Cole o Módulo 2 (Motor e Modelo) para ativar a vinculação, os filtros e a busca global.</p>
+        <div class="row"><button class="btn r" onclick="App.reset()">↺ Restaurar base original</button></div></div>
+      <div class="grid g2">
+        <div class="card"><h3>⚡ Obras AT</h3><div class="tw" style="max-height:420px"><table><thead><tr><th>PEP</th><th>SE</th><th>Sigla</th><th>Equip.</th><th>Energ.</th></tr></thead><tbody>
+          ${A.map(a=>`<tr><td>${U.esc(a.pep)}</td><td>${U.esc(a.se)}</td><td>${a.sigla}</td><td>${a.equip.join(', ')||'—'}</td><td>${U.fmtD(a.dEn)} <span class="mut">${a.tipoData}</span></td></tr>`).join('')}</tbody></table></div></div>
+        <div class="card"><h3>🛠 Obras RD</h3><div class="tw" style="max-height:420px"><table><thead><tr><th>ID</th><th>Descrição</th><th>Sigla/Alim.</th><th>Energ.</th><th>Custo</th></tr></thead><tbody>
+          ${R.map(r=>`<tr><td>${r.id}</td><td>${U.esc(U.tr(r.desc,48))}</td><td>${r.sigla||'—'} ${r.keys.join('/')}</td><td>${U.fmtD(r.dEn)}</td><td>${U.fmtR(r.custo)}</td></tr>`).join('')}</tbody></table></div></div></div>`;
+  },
+  toggleDark(){S.config.dark=!S.config.dark;document.body.classList.toggle('dark',S.config.dark);Store.save();this.render()},
+  backup(){U.dl(`eqtl_gi_backup_${U.stampF()}.json`,JSON.stringify(S,null,1),'application/json');Audit.log('Backup','Base','json',null,'exportado');Store.save()},
+  reset(){if(!Perm.guard('*'))return;UI.ask('Restaurar base original','Todas as interfaces, vínculos e edições serão apagados. Confirmar?',()=>{const cfg=S.config;Store.clear();Store.init();S.config=cfg;S.config.seq={};this.seed();this.fire('afterLoad',true);Store.save();this.render();UI.toast('Base restaurada')})},
+  help(){UI.modal({title:'Ajuda — Governança de Interfaces AT x RD',wide:true,body:`
+    <p><b>Regra-mãe:</b> 1 Interface → 1 Obra AT → 1 PEP AT &nbsp;+&nbsp; 1 Interface → N Obras RD → N PEPs RD.</p>
+    <p><b>Fluxo:</b> Importação → Motor → Cadastro (sugestão → ajuste → ✅ Interface_ID) → Obras AT/RD → Governança → Dashboard/Gantt → Relatórios.</p>
+    <p><b>Delta</b> = Energização RD mais tardia − Energização AT. 🟢 ≤30d • 🟠 31–60d • 🔴 &gt;60d • ⚠ negativo = RD sem fonte.</p>
+    <p><b>Interface_ID:</b> INT-{UF}-{SLUGSE}-{SEQ}. É gerado na confirmação, congelado e nunca reaproveitado.</p>
+    <p class="mut">Dados salvos no LocalStorage do navegador (prefixo eqtl.gi.v2.). Use 💾 Backup com frequência.</p>`})}
+};
+window.addEventListener('load',()=>App.init());
+</script>
 
 <script>
-const C={az:'#065DAC',vd:'#0B9454',am:'#EAA02E',vm:'#B92927',rx:'#32306E',sp:'#7a1b1a',bl:'#1F2E8C'};
-const ST={'Aderente':C.vd,'Atenção':C.am,'Crítico':C.vm,'Sem previsão':C.sp,
-  'Concl. Aderente':'#5DADF5','Concl. Atenção':'#1E7FD8','Concl. Crítico':'#065DAC','Concl. s/ previsão':'#0A2F6B'};
-const FX={'Aderente':'≤ 30 d','Atenção':'31–60 d','Crítico':'> 60 d','Sem previsão':'s/ data',
-  'Concl. Aderente':'≤ 30 d','Concl. Atenção':'31–60 d','Concl. Crítico':'> 60 d','Concl. s/ previsão':'s/ data'};
-const PRI=['Sem previsão','Crítico','Atenção','Aderente','Concl. s/ previsão','Concl. Crítico','Concl. Atenção','Concl. Aderente'];
-const CLS={'Com rede':C.vd,'Sem rede':C.vm,'Em andamento':C.bl};
-const AC={'Casado':C.vd,'Descasado':C.am,'Bay s/ RD':C.vm,'RD s/ bay':C.rx,'Sem datas':'#9AA0A6'};
-const STF={AT:['Não iniciada','Em projeto','Em execução','Energizada','Concluída','Paralisada','Cancelada'],
-  RD:['Não iniciada','Em projeto','Em execução','Concluída','Paralisada','Cancelada']};
-const STC={'Concluída':C.vd,'Energizada':C.vd,'Em execução':C.az,'Em projeto':C.rx,'Não iniciada':'#888','Paralisada':C.vm,'Cancelada':C.sp};
-const REG={AL:'Nordeste',MA:'Nordeste',PI:'Nordeste',PA:'Norte',AP:'Norte',GO:'Centro-Oeste',RS:'Sul'};
-const MES={jan:0,fev:1,feb:1,mar:2,abr:3,apr:3,mai:4,may:4,jun:5,jul:6,ago:7,aug:7,set:8,sep:8,out:9,oct:9,nov:10,dez:11,dec:11};
-const HOJE=new Date();HOJE.setHours(0,0,0,0);dt.textContent='Atualizado: '+HOJE.toLocaleDateString('pt-BR')+' ';
-let DATA=[],CH={},modo='O',selSt='',selMes='',selAc='',VIS=[],wSE={};
-let UPD=[],LINK={},LAST={},EMPS={},SEL='',SP=null,PF=[],aba='P';
-const N=s=>String(s??'').trim().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-const H$=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const fm=d=>d?d.toLocaleDateString('pt-BR'):'—';
-const iso=d=>d?new Date(d-d.getTimezoneOffset()*6e4).toISOString().slice(0,10):'';
-const pIso=s=>s?new Date(s+'T00:00:00'):null;
-const mk=d=>d?d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'):null;
-const ml=k=>{const[y,m]=k.split('-');return new Date(y,m-1,1).toLocaleDateString('pt-BR',{month:'short',year:'2-digit'})};
-const tier=g=>Math.abs(g)<=30?'Aderente':Math.abs(g)<=60?'Atenção':'Crítico';
-const mkC=(id,cfg)=>{CH[id]&&CH[id].destroy();CH[id]=new Chart(document.getElementById(id),cfg)};
-const lbl=(c,t,x,y,sz=12,col=C.rx)=>{c.fillStyle=col;c.font=`bold ${sz}px Segoe UI`;c.textAlign='center';c.fillText(t,x,y)};
-const noY={y:{display:false,beginAtZero:true,grace:'15%'},x:{grid:{display:false},border:{display:false},ticks:{color:C.rx,font:{weight:'bold',size:10}}}};
-
-lg.innerHTML='<span style="color:#065DAC">● AT</span><span style="color:#EAA02E">● RD</span><span>┃ Hoje</span><span>✎ atualizado no formulário</span>'+
-  Object.keys(ST).map(k=>`<span style="color:${ST[k]}">▬ ${k} (${FX[k]})</span>`).join('');
-
-/* ===== IndexedDB (atualizações + vínculos PEP RD) ===== */
-const DB=new Promise((ok,er)=>{const r=indexedDB.open('RDxAT_FORM',1);
-  r.onupgradeneeded=()=>{r.result.createObjectStore('upd',{keyPath:'id'});r.result.createObjectStore('lnk',{keyPath:'k'})};
-  r.onsuccess=()=>ok(r.result);r.onerror=er});
-const tx=(s,m,fn)=>DB.then(d=>new Promise((ok,er)=>{const t=d.transaction(s,m),q=fn(t.objectStore(s));t.oncomplete=()=>ok(q&&q.result);t.onerror=er}));
-
-async function loadDB(){
-  UPD=await tx('upd','readonly',o=>o.getAll())||[];
-  const L=await tx('lnk','readonly',o=>o.getAll())||[];LINK={};L.forEach(x=>LINK[x.k]=x.pep);
-  LAST={};[...UPD].sort((a,b)=>a.ts<b.ts?-1:1).forEach(u=>{const k=u.tipo+'|'+u.pep,p=LAST[k]||{};
-    LAST[k]={dt:u.dt||p.dt,st:u.st||p.st,cm:u.cm||p.cm,ts:u.ts,us:u.us}});
-  DATA.forEach(calc);
-  EMPS={};DATA.forEach(d=>{const o=EMPS[d.pep]||(EMPS[d.pep]={pep:d.pep,se:d.se,emp:d.emp,rows:[],rds:new Set});o.rows.push(d);if(d.pr)o.rds.add(d.pr)});
-  lEF.innerHTML=Object.values(EMPS).sort((a,b)=>a.se<b.se?-1:1).map(o=>`<option value="${H$(o.pep)} — ${H$(o.se)}">`).join('');
-  feC.textContent=Object.keys(EMPS).length?Object.keys(EMPS).length+' empreendimentos':'';
-}
-
-function pd(v){
-  if(v==null||v==='')return null;let d=null;
-  if(v instanceof Date)d=v;
-  else if(typeof v==='number')d=new Date(Math.round((v-25569)*864e5));
-  else{const s=String(v).trim().toLowerCase();let m;
-    if(m=s.match(/^([a-zç]{3})[-\/ ](\d{2,4})$/)){let y=+m[2];if(y<100)y+=2000;if(MES[m[1]]!=null)d=new Date(y,MES[m[1]],15);}
-    else if(m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/)){let y=+m[3];if(y<100)y+=2000;d=new Date(y,m[1]-1,m[2]);}}
-  return d&&!isNaN(d)&&d.getFullYear()>=2020?d:null;
-}
-
-/* recalcula a linha aplicando o formulário (AT por PEP AT | RD por PEP RD) */
-function calc(d){
-  const pr=d.pepRD||LINK[d.key]||'',ua=LAST['AT|'+d.pep],ur=pr&&LAST['RD|'+pr];
-  const at=ua&&ua.dt?pIso(ua.dt):d.at0,rd=ur&&ur.dt?pIso(ur.dt):d.rd0;
-  const stSE=ua&&ua.st||d.stSE0,stA=ur&&ur.st||d.stA0;
-  const gap=at&&rd?Math.round((rd-at)/864e5):null,conc=N(stA).includes('CONCLU');
-  const ener=/CONCLU|ENERGIZ/.test(N(stSE))||(at&&at<=HOJE);
-  const base=gap==null?'Sem previsão':tier(gap);
-  const st=conc?(gap==null?'Concl. s/ previsão':'Concl. '+base):base;
-  const cls=!ener?'Em andamento':conc?'Com rede':'Sem rede';
-  const ac=at&&rd?(Math.abs(gap)<=30?'Casado':'Descasado'):at?'Bay s/ RD':rd?'RD s/ bay':'Sem datas';
-  const pend=[!at&&'Sem data AT',!rd&&!conc&&'Sem data RD',!conc&&gap>60&&'RD atrasada >60d',
-    !conc&&gap<-60&&'AT atrasada >60d',cls==='Sem rede'&&rd&&rd<HOJE&&'Previsão RD vencida'].filter(Boolean).join(' | ');
-  Object.assign(d,{pr,at,rd,stSE,stA,gap,st,cls,conc,ac,pend,oAT:!!(ua&&ua.dt),oRD:!!(ur&&ur.dt)});
-}
-
-f.onchange=e=>{
-  const file=e.target.files[0];if(!file)return;
-  const r=new FileReader();
-  r.onload=async ev=>{
-    const wb=XLSX.read(ev.target.result,{type:'array',cellDates:true});
-    const ws=wb.Sheets['BASE DE DADOS']||wb.Sheets[wb.SheetNames[0]];
-    const rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:''});
-    const h=rows.findIndex(r=>N(r[0])==='EMPRESA');const H=rows[h].map(N);
-    const ix=(n,d)=>{const i=H.indexOf(n);return i>=0?i:d};
-    const I={emp:ix('EMPRESA',0),dem:ix('DEMANDANTE',2),tipo:ix('TIPO DE OBRA',3),pep:ix('PEP',4),se:ix('INSTALACAO',5),
-      mod:ix('MODULO',11),qt:ix('QTDE',12),stSE:ix('STATUS SE',14),at:ix('PROJ DE ENERG',18),stA:ix('STATUS ALIMENTADOR',21),
-      rd:ix('ALIMENTADOR',22),fase:ix('FASE DA OBRA RD',26),reg:H.indexOf('REGIONAL'),
-      prd:H.findIndex(x=>x!=='PEP'&&/PEP.*RD|RD.*PEP/.test(x))};
-    const seen={};
-    DATA=rows.slice(h+1).filter(r=>N(r[I.emp]).startsWith('EQTL')).map(r=>{
-      const sg=N(r[I.emp]).replace('EQTL','').trim(),pep=String(r[I.pep]||'—').trim(),se=String(r[I.se]).trim(),mod=String(r[I.mod]||'').trim();
-      let key=pep+'|'+se+'|'+mod;seen[key]=(seen[key]||0)+1;if(seen[key]>1)key+='#'+seen[key];
-      return{key,emp:'EQTL '+sg,dem:r[I.dem]||'—',reg:I.reg>=0&&r[I.reg]?r[I.reg]:(REG[sg]||'Outros'),tipo:r[I.tipo],
-        pep,se,mod,qt:+r[I.qt]||1,stSE0:r[I.stSE],stA0:r[I.stA],fase:r[I.fase],
-        pepRD:I.prd>=0?String(r[I.prd]||'').trim():'',at0:pd(r[I.at]),rd0:pd(r[I.rd])};
+"use strict";
+/* ---------- Motor: correlação AT x RD ... ---------- */
+const Motor={
+  P:{},nPairs:0,
+  STOP:new Set(['NOVA','NOVO','SANTA','SANTO','SERRA','CIDADE','BARRA','ILHA','OLHO','AGUA','POLO','PORTO','DOS','DAS','CENTRAL','FLORES','NORTE','SUL']),
+  KW:/ (NOVO|NOVA|NOVOS|ALIMENTADOR|AL|BRT|RECAPACITACAO|MELHORAMENTO|TRIFASEAMENTO|RECONDUTORAMENTO|INTERLIGACAO|CONSTRUCAO|BC|LD) /,
+  ext:d=>Ext.run(d),
+  alias(){const a={};Object.values(S.deParaSE).forEach(d=>(d.aliases||[]).forEach(x=>{if(x)a[U.N(x)]=d.sigla}));return a},
+  score(at,rd,w=S.config.w,al=this.alias()){
+    if(!at||!rd||!at.uf||at.uf!==rd.uf)return null;
+    const d=' '+U.N(rd.desc).replace(/[^A-Z0-9]+/g,' ')+' ',rs=rd.sigla?(al[rd.sigla]||rd.sigla):'',b={se:0,mun:0,reg:0,ali:0,kw:0,alias:false};
+    const name=U.seName(at.se).replace(/[^A-Z0-9]+/g,' ').trim();
+    if(at.sigla&&rs===at.sigla){b.se=w.se;b.alias=rs!==rd.sigla}
+    else if(name.length>=4&&d.includes(' '+name+' '))b.se=w.se;
+    const mun=U.N((S.deParaSE[at.sigla]||{}).municipio||'').replace(/[^A-Z0-9]+/g,' ').split(' ').filter(x=>x.length>=4&&!this.STOP.has(x));
+    if(mun.length&&mun.every(x=>d.includes(' '+x+' ')))b.mun=w.mun;
+    if(!b.se&&!b.mun)return null;
+    b.reg=w.reg;
+    if((rd.keys||[]).some(k=>(at.keys||[]).includes(k)))b.ali=w.ali;
+    if(this.KW.test(d))b.kw=w.kw;
+    b.total=Math.min(100,Math.round(b.se+b.mun+b.reg+b.ali+b.kw));
+    return b;
+  },
+  detTxt:s=>s?`SE ${s.se} • Mun ${s.mun} • Reg ${s.reg} • Alim ${s.ali} • KW ${s.kw}${s.alias?' • via alias':''}`:'sem correlação',
+  /* Desempate: maior total → menor distância entre Prev AT (ou Energ. RD) e Energ. AT */
+  evaluate(w=S.config.w,store=true){
+    const P={},ats=Object.values(S.obrasAT),al=this.alias();let n=0;
+    Object.values(S.obrasRD).forEach(rd=>{
+      const c=[];
+      ats.forEach(at=>{const s=this.score(at,rd,w,al);if(s){n++;const ref=rd.prevAT||rd.dEn;c.push({pep:at.pep,...s,dist:ref&&at.dEn?Math.abs(U.days(ref,at.dEn)):9e9})}});
+      if(!c.length)return;
+      c.sort((a,b)=>b.total-a.total||a.dist-b.dist);
+      const best=c[0],second=c[1]||null;
+      P[rd.id]={best,second,amb:!!(best.alias||(second&&best.total-second.total<10))};
     });
-    await loadDB();
-    ['fEmp','fReg','fDem'].forEach(id=>{const s=document.getElementById(id);s.length=1;
-      [...new Set(DATA.map(d=>d[{fEmp:'emp',fReg:'reg',fDem:'dem'}[id]]))].sort().forEach(v=>s.add(new Option(v,v)));});
-    lSe.innerHTML=[...new Set(DATA.map(d=>d.se))].sort().map(v=>`<option value="${H$(v)}">`).join('');
-    fAno.length=1;
-    [...new Set(DATA.flatMap(d=>[d.at,d.rd]).filter(Boolean).map(t=>t.getFullYear()))].sort().forEach(y=>fAno.add(new Option(y,y)));
-    if([...fAno.options].some(o=>o.value==HOJE.getFullYear()))fAno.value=String(HOJE.getFullYear());
-    empty.style.display='none';bExp.disabled=false;setAba(aba);
-  };
-  r.readAsArrayBuffer(file);
+    if(store){this.P=P;this.nPairs=n}
+    return P;
+  },
+  locked(pep){const i=S.interfaces[pep];return!!i&&['Confirmada','Rejeitada','Encerrada'].includes(i.status)},
+  /* Nunca altera interfaces Confirmadas/Rejeitadas nem vínculos manuais */
+  plan(P,thr=S.config.thr){
+    const L={};
+    Object.entries(S.links).forEach(([rid,l])=>{if(S.obrasRD[rid]&&S.obrasAT[l.pep]&&(l.orig==='manual'||this.locked(l.pep)))L[rid]={...l}});
+    Object.keys(S.obrasRD).forEach(rid=>{
+      if(L[rid])return;const p=P[rid];
+      if(p&&p.best.total>=thr&&!this.locked(p.best.pep)&&S.obrasAT[p.best.pep])L[rid]={pep:p.best.pep,score:p.best.total,orig:'motor'};
+    });
+    return L;
+  },
+  /* Simulação: quantos vínculos mudariam com novos pesos/limiar, sem gravar */
+  simulate(w,thr){
+    const P=this.evaluate(w,false),L=this.plan(P,thr),diff=[];
+    new Set([...Object.keys(L),...Object.keys(S.links)]).forEach(r=>{const a=S.links[r]?.pep||'',b=L[r]?.pep||'';if(a!==b)diff.push({rd:r,de:a,para:b})});
+    return{P,L,diff};
+  },
+  ensureDePara(){
+    Object.values(S.obrasAT).forEach(a=>{if(a.sigla&&!S.deParaSE[a.sigla])S.deParaSE[a.sigla]={sigla:a.sigla,aliases:Seed.ALIAS[a.sigla]||[],nome:U.seName(a.se),
+      municipio:Seed.MUN[a.sigla]||U.seName(a.se).replace(/\s+(II|III|IV|V)$/,''),uf:a.uf}});
+  },
+  ensureInterfaces(){
+    Object.keys(S.obrasAT).forEach(p=>{if(!S.interfaces[p])S.interfaces[p]={pep:p,intId:'',status:'Sugerida',resp:'',obs:'',just:'',score:0,amb:false,regional:'',municipio:'',criado:U.now(),confAt:'',confBy:'',upd:U.now()}});
+    Object.keys(S.interfaces).forEach(p=>{if(!S.obrasAT[p]&&S.interfaces[p].status!=='Confirmada')delete S.interfaces[p]});
+  },
+  refresh(){
+    const al=this.alias(),agg={};
+    Object.entries(S.links).forEach(([rid,l])=>{
+      const s=this.score(S.obrasAT[l.pep],S.obrasRD[rid],S.config.w,al);
+      l.score=s?s.total:0;l.det=s;l.amb=!!(this.P[rid]&&this.P[rid].amb&&this.P[rid].best.pep===l.pep);
+      (agg[l.pep]=agg[l.pep]||[]).push(l);
+    });
+    Object.values(S.interfaces).forEach(i=>{const a=agg[i.pep]||[];i.score=a.length?Math.round(a.reduce((t,x)=>t+x.score,0)/a.length):0;i.amb=a.some(x=>x.amb)});
+  },
+  run(log=false){
+    this.ensureDePara();this.evaluate();S.links=this.plan(this.P);this.ensureInterfaces();this.refresh();Model.touch();
+    if(log)Audit.log('Executar Motor','Motor','run',null,`${Object.keys(S.links).length} vínculos • ${this.nPairs} pares`);
+  },
+  /* Vínculo manual (usado pelo Cadastro e Obras RD) */
+  link(rid,pep,orig='manual'){const a=S.links[rid]?.pep||'';S.links[rid]={pep,score:0,orig};this.refresh();Model.touch();Audit.log('Vincular RD','Obra RD',rid,a,pep)},
+  unlink(rid){const a=S.links[rid]?.pep||'';delete S.links[rid];this.refresh();Model.touch();Audit.log('Desvincular RD','Obra RD',rid,a,'')},
+  stats(){
+    const L=Object.values(S.links),c=k=>L.filter(l=>U.conf(l.score)[0]===k).length;
+    return{pares:this.nPairs,alta:c('Alta'),media:c('Média'),baixa:c('Baixa'),amb:L.filter(l=>l.amb).length,orfas:Object.keys(S.obrasRD).filter(r=>!S.links[r]).length,vinc:L.length};
+  }
 };
 
-/* ===== ABAS ===== */
-function setAba(a){aba=a;tP.classList.toggle('on',a==='P');tF.classList.toggle('on',a==='F');
-  document.querySelectorAll('.pf').forEach(e=>e.style.display=a==='P'?'':'none');
-  document.querySelectorAll('.ff').forEach(e=>e.style.display=a==='F'?'':'none');
-  if(!DATA.length)return;
-  app.style.display=a==='P'?'grid':'none';frm.style.display=a==='F'?'grid':'none';
-  a==='P'?render():renderForm()}
-tP.onclick=()=>setAba('P');tF.onclick=()=>setAba('F');
-
-['fEmp','fReg','fDem','fHz','fAno'].forEach(i=>document.getElementById(i).onchange=render);
-fSe.oninput=render;
-bClr.onclick=()=>{fSe.value=fEmp.value=fReg.value=fDem.value=fHz.value=fAno.value='';selSt=selMes=selAc='';render()};
-const setM=m=>{modo=m;bO.classList.toggle('on',m==='O');bM.classList.toggle('on',m==='M');selSt='';DATA.length&&render()};
-bO.onclick=()=>setM('O');bM.onclick=()=>setM('M');
-let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>DATA.length&&aba==='P'&&render(),200)});
-
-const sO=d=>modo==='O'?wSE[d.se]:d.st;
-const inSt=d=>!selSt||sO(d)===selSt, inAc=d=>!selAc||d.ac===selAc;
-const inMes=d=>!selMes||mk(d.at)===selMes||mk(d.rd)===selMes;
-const inHz=d=>{if(!fHz.value)return true;const lim=+HOJE+fHz.value*864e5;return[d.at,d.rd].some(t=>t&&t>=HOJE&&t<=lim)};
-const inAno=d=>!fAno.value||[d.at,d.rd].some(t=>t&&t.getFullYear()==fAno.value);
-const q=(A,f=()=>1)=>{const B=A.filter(f);return modo==='M'?B.reduce((a,d)=>a+d.qt,0):new Set(B.map(d=>d.se)).size};
-const sq=A=>A.reduce((a,d)=>a+d.qt,0);
-const un=()=>modo==='M'?'Alimentadores':'SEs';
-const pct=(a,b)=>b?Math.round(a/b*100):0;
-
-/* ===== PAINEL ===== */
-function render(){
-  if(aba!=='P')return;
-  const s=N(fSe.value);
-  const D0=DATA.filter(d=>(!s||N(d.se).includes(s))&&(!fEmp.value||d.emp===fEmp.value)&&(!fReg.value||d.reg===fReg.value)&&(!fDem.value||d.dem===fDem.value)&&inHz(d)&&inAno(d));
-  wSE={};D0.forEach(d=>{const p=wSE[d.se];if(!p||PRI.indexOf(d.st)<PRI.indexOf(p))wSE[d.se]=d.st});
-  const D=VIS=D0.filter(d=>inSt(d)&&inMes(d)&&inAc(d));
-
-  chips.innerHTML=[selSt&&[`Status (${un()}): ${selSt}`,"selSt=''"],selMes&&[`Mês: ${ml(selMes)}`,"selMes=''"],
-    selAc&&[`Acurácia: ${selAc}`,"selAc=''"],fAno.value&&[`Ano: ${fAno.value}`,"fAno.value=''"],
-    fHz.value&&[`Próximos ${fHz.value} dias`,"fHz.value=''"]]
-    .filter(Boolean).map(([t,a])=>`<span class="chip" onclick="${a};render()">${t} ✖</span>`).join('');
-
-  const tot=q(D),ok=q(D,d=>/Aderente/.test(sO(d))),acT=sq(D),acC=sq(D.filter(d=>d.ac==='Casado'));
-  const G=D.filter(d=>d.gap!=null&&!d.conc),gm=G.length?Math.round(G.reduce((a,d)=>a+Math.abs(d.gap),0)/G.length):0;
-  kpis.innerHTML=[[un(),tot,C.az],['Com rede',q(D,d=>d.cls==='Com rede'),C.vd],['Sem rede (sem carga)',q(D,d=>d.cls==='Sem rede'),C.vm],
-    ['Em andamento',q(D,d=>d.cls==='Em andamento'),C.bl],['Aderência (≤30d)',pct(ok,tot)+'%',pct(ok,tot)>=80?C.vd:C.vm],
-    ['Acurácia RD x AT',pct(acC,acT)+'%',pct(acC,acT)>=80?C.vd:pct(acC,acT)>=60?C.am:C.vm],
-    ['Críticas (>60d)',q(D,d=>sO(d)==='Crítico'),C.vm],['Pendências',D.filter(d=>d.pend).length,C.am],
-    ['Descompasso médio',gm+' d',gm>60?C.vm:gm>30?C.am:C.vd],['Atualizações formulário',UPD.length,C.rx]]
-    .map(k=>`<div class="k" style="border-color:${k[2]}"><b style="color:${k[2]}">${k[1]}</b><span>${k[0]}</span></div>`).join('');
-
-  const emps=['EQTL D',...[...new Set(D.map(d=>d.emp))].sort()];
-  const byE=(A,e)=>e==='EQTL D'?A:A.filter(d=>d.emp===e);
-  const clkE=(e,el)=>{if(!el.length)return;const v=emps[el[0].index];fEmp.value=v==='EQTL D'||fEmp.value===v?'':v;render()};
-
-  // 1) FOTOGRAFIA
-  mkC('cf',{type:'bar',data:{labels:emps,datasets:Object.keys(CLS).map(k=>({label:'Bay '+k.toLowerCase(),
-      data:emps.map(e=>q(byE(D,e),d=>d.cls===k)),backgroundColor:CLS[k],borderRadius:4}))},
-    options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:18}},onClick:clkE,
-      plugins:{legend:{position:'bottom',labels:{boxWidth:12}},tooltip:{enabled:false}},scales:noY},
-    plugins:[{afterDatasetsDraw(c){c.data.datasets.forEach((ds,i)=>c.getDatasetMeta(i).data.forEach((b,j)=>lbl(c.ctx,ds.data[j],b.x,b.y-4,11)))}}]});
-
-  // 2) CRONOGRAMA
-  const SR=D.filter(d=>d.cls==='Sem rede'),tS=q(SR);
-  const venc=SR.filter(d=>d.rd&&d.rd<HOJE),fut=SR.filter(d=>d.rd&&d.rd>=HOJE),sp=SR.filter(d=>!d.rd);
-  const mks=[...new Set(fut.map(d=>mk(d.rd)))].sort();
-  const steps=[['Vencida',q(venc),C.vm],...mks.map(k=>[ml(k),q(fut,d=>mk(d.rd)===k),C.vd])].filter((x,i)=>i||x[1]);
-  let rest=tS;const bL=['TOTAL BAYS'],bD=[[0,tS]],bC=[C.vm];
-  steps.forEach(([l,v,c])=>{bL.push(l);bD.push([rest-v,rest]);bC.push(c);rest-=v});
-  bL.push('SEM PREVISÃO');bD.push([0,q(sp)]);bC.push(C.vm);
-  const red=tS?Math.round((q(sp)-tS)/tS*100):0;
-  mkC('cb',{type:'bar',data:{labels:bL,datasets:[{data:bD,backgroundColor:bC,borderRadius:3,barPercentage:.6}]},
-    options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:40}},plugins:{legend:{display:false},tooltip:{enabled:false}},scales:noY},
-    plugins:[{afterDatasetsDraw(c){const x=c.ctx,m=c.getDatasetMeta(0).data;
-      m.forEach((b,i)=>{const v=bD[i][1]-bD[i][0];lbl(x,v,b.x,(b.y+b.base)/2+5,13,v?'#fff':C.rx);
-        if(i<m.length-1){x.strokeStyle='#999';x.setLineDash([3,3]);x.beginPath();
-          const y=i===0?b.y:c.scales.y.getPixelForValue(bD[i][0]);x.moveTo(b.x+b.width/2,y);x.lineTo(m[i+1].x-m[i+1].width/2,y);x.stroke();x.setLineDash([])}});
-      if(m.length>1){const a=m[0],z=m[m.length-1],y=a.y-22;x.strokeStyle=C.rx;x.beginPath();x.moveTo(a.x,a.y);x.lineTo(a.x,y);
-        x.lineTo(z.x,y);x.lineTo(z.x,z.y-4);x.stroke();x.fillStyle='#fff';x.fillRect((a.x+z.x)/2-26,y-10,52,20);
-        x.strokeRect((a.x+z.x)/2-26,y-10,52,20);lbl(x,red+'%',(a.x+z.x)/2,y+4,12,C.rx)}}}]});
-  const ag={};SR.forEach(d=>{const k=(d.rd?(d.rd<HOJE?'0':mk(d.rd)):'z')+'|'+d.se;ag[k]=(ag[k]||0)+(modo==='M'?d.qt:0)});
-  Object.keys(ag).forEach(k=>{if(modo==='O')ag[k]=1});
-  tb.innerHTML=`<table><tr><th>MÊS</th><th>SUBESTAÇÃO</th><th>QTDE</th></tr>`+Object.keys(ag).sort().map(k=>{const[m,se]=k.split('|');
-      return`<tr><td>${m==='0'?'<b style="color:#B92927">Vencida</b>':m==='z'?'Sem previsão':ml(m)}</td><td>${H$(se)}</td><td><b>${ag[k]}</b></td></tr>`}).join('')+
-    `<tr class="tt"><td colspan="2">TOTAL</td><td>${Object.values(ag).reduce((a,v)=>a+v,0)}</td></tr></table>`;
-
-  // 3) ACURÁCIA
-  const DA=D0.filter(d=>inSt(d)&&inMes(d)),EA=['EQTL D',...[...new Set(DA.map(d=>d.emp))].sort()];
-  mkC('ca',{type:'bar',data:{labels:EA,datasets:Object.keys(AC).map(k=>({label:k,
-      data:EA.map(e=>sq(byE(DA,e).filter(d=>d.ac===k))),backgroundColor:EA.map(()=>!selAc||selAc===k?AC[k]:AC[k]+'33'),stack:'s'}))},
-    options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:22}},
-      onClick:(e,el)=>{if(!el.length)return;const k=Object.keys(AC)[el[0].datasetIndex];selAc=selAc===k?'':k;render()},
-      plugins:{legend:{position:'bottom',labels:{boxWidth:12}},tooltip:{enabled:false}},
-      scales:{...noY,x:{...noY.x,stacked:true},y:{...noY.y,stacked:true}}},
-    plugins:[{afterDatasetsDraw(c){const x=c.ctx;c.data.datasets.forEach((ds,i)=>c.getDatasetMeta(i).data.forEach((b,j)=>{
-        const v=ds.data[j];if(v&&Math.abs(b.base-b.y)>12)lbl(x,v,b.x,(b.y+b.base)/2+4,11,'#fff')}));
-      const top=c.getDatasetMeta(c.data.datasets.length-1).data;EA.forEach((e,j)=>{const A=byE(DA,e),p=pct(sq(A.filter(d=>d.ac==='Casado')),sq(A));
-        const yT=Math.min(...c.data.datasets.map((_,i)=>c.getDatasetMeta(i).data[j].y));
-        lbl(x,p+'%',top[j].x,yT-6,12,p>=80?C.vd:p>=60?C.am:C.vm)})}}]});
-  const bs={};D.forEach(d=>{const o=bs[d.se]||(bs[d.se]={emp:d.emp,t:0,c:0,ss:0,sp:0,rb:0});
-    o.t+=d.qt;if(d.ac==='Casado')o.c+=d.qt;if(d.cls==='Sem rede'){o.ss+=d.qt;if(d.rd)o.sp+=d.qt}if(d.ac==='RD s/ bay')o.rb+=d.qt});
-  const sk=Object.keys(bs).sort((a,b)=>pct(bs[a].c,bs[a].t)-pct(bs[b].c,bs[b].t));
-  ta.innerHTML=`<table><tr><th>SE</th><th title="Bays energizados sem carga">Bay s/ carga</th><th title="Desses, com previsão RD">c/ RD</th><th title="RD prevista sem data AT">RD s/ bay</th><th>Acur.</th></tr>`+
-    sk.map(k=>{const o=bs[k],p=pct(o.c,o.t),c=p>=80?C.vd:p>=60?C.am:C.vm;
-      return`<tr><td style="text-align:left">${o.emp} · ${H$(k.replace(/^SE /,''))}</td><td>${o.ss}</td><td style="color:${o.sp<o.ss?C.vm:C.vd}"><b>${o.sp}</b></td><td style="color:${o.rb?C.rx:''}"><b>${o.rb}</b></td><td style="color:${c}"><b>${p}%</b></td></tr>`}).join('')+
-    `<tr class="tt"><td>TOTAL</td><td>${sk.reduce((a,k)=>a+bs[k].ss,0)}</td><td>${sk.reduce((a,k)=>a+bs[k].sp,0)}</td><td>${sk.reduce((a,k)=>a+bs[k].rb,0)}</td><td>${pct(acC,acT)}%</td></tr></table>`;
-
-  // 4) CASCATA
-  const DS=D0.filter(d=>inMes(d)&&inAc(d));let acc=0;const fl=[],cols=[],L=[];
-  Object.keys(ST).forEach(k=>{const v=q(DS,d=>sO(d)===k);fl.push([acc,acc+v]);acc+=v;L.push(k);cols.push(!selSt||selSt===k?ST[k]:ST[k]+'33')});
-  fl.push([0,acc]);L.push('TOTAL '+un().toUpperCase());cols.push(C.rx);
-  mkC('cw',{type:'bar',data:{labels:L.map((k,i)=>i<8?[k,FX[k]]:k),datasets:[{data:fl,backgroundColor:cols,borderRadius:6,barPercentage:.75}]},
-    options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:34}},
-      onClick:(e,el)=>{if(!el.length)return;const i=el[0].index,k=L[i];selSt=(i===8||selSt===k)?'':k;render()},
-      plugins:{legend:{display:false},tooltip:{enabled:false}},scales:noY},
-    plugins:[{afterDatasetsDraw(c){c.getDatasetMeta(0).data.forEach((b,i)=>{const v=fl[i][1]-fl[i][0];
-      lbl(c.ctx,v,b.x,b.y-18,14);lbl(c.ctx,pct(v,acc)+'%',b.x,b.y-5,11,'#666')})}}]});
-
-  // 5) CURVA MENSAL
-  const DM=D0.filter(d=>inSt(d)&&inAc(d)),km=[...new Set(DM.flatMap(d=>[mk(d.at),mk(d.rd)]).filter(Boolean))]
-    .filter(k=>!fAno.value||k.startsWith(fAno.value)).sort();
-  const vA=km.map(k=>q(DM,d=>mk(d.at)===k)),vR=km.map(k=>q(DM,d=>mk(d.rd)===k));
-  let a1=0,a2=0;const cA=vA.map(v=>a1+=v),cR=vR.map(v=>a2+=v),fade=(c,k)=>!selMes||selMes===k?c:c+'33';
-  mkC('cm',{data:{labels:km.map(ml),datasets:[
-      {type:'bar',label:'AT no mês',data:vA,backgroundColor:km.map(k=>fade(C.az,k)),borderRadius:4,yAxisID:'y'},
-      {type:'bar',label:'RD no mês',data:vR,backgroundColor:km.map(k=>fade(C.am,k)),borderRadius:4,yAxisID:'y'},
-      {type:'line',label:'AT acumulado',data:cA,borderColor:C.az,backgroundColor:C.az,borderDash:[5,4],pointRadius:3,tension:.3,yAxisID:'y2'},
-      {type:'line',label:'RD acumulado',data:cR,borderColor:C.am,backgroundColor:C.am,borderDash:[5,4],pointRadius:3,tension:.3,yAxisID:'y2'}]},
-    options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:22}},
-      onClick:(e,el)=>{if(!el.length)return;const k=km[el[0].index];selMes=selMes===k?'':k;render()},
-      plugins:{legend:{position:'bottom',labels:{boxWidth:12}},tooltip:{mode:'index',intersect:false}},
-      scales:{...noY,y:{display:false,beginAtZero:true,grace:'25%'},y2:{display:false,beginAtZero:true,grace:'10%'}}},
-    plugins:[{afterDatasetsDraw(c){[0,1].forEach(i=>c.getDatasetMeta(i).data.forEach((b,j)=>{const v=c.data.datasets[i].data[j];if(v)lbl(c.ctx,v,b.x,b.y-4,11)}));
-      [2,3].forEach(i=>{const m=c.getDatasetMeta(i).data,v=c.data.datasets[i].data,n=m.length-1;
-        if(n>=0)lbl(c.ctx,'Σ '+v[n],m[n].x-14,m[n].y-8,12,i===2?C.az:C.am)})}}]});
-
-  // 6) GANTT
-  let R;
-  if(modo==='O'){const g={};D.forEach(d=>{const o=g[d.se]||(g[d.se]={se:d.se,emp:d.emp,pep:d.pep,at:null,rd:null,semRd:false,n:0,ed:false});
-      o.n+=d.qt;o.ed=o.ed||d.oAT||d.oRD;if(d.at&&(!o.at||d.at<o.at))o.at=d.at;if(!d.rd&&!d.conc)o.semRd=true;if(d.rd&&(!o.rd||d.rd>o.rd))o.rd=d.rd});
-    R=Object.values(g).map(o=>{if(o.semRd)o.rd=null;o.gap=o.at&&o.rd?Math.round((o.rd-o.at)/864e5):null;
-      o.st=wSE[o.se];o.sub=`${o.st} · ${o.n} alim.`;return o});
-  }else R=D.map(d=>({...d,ed:d.oAT||d.oRD,sub:`${d.st} · ${d.ac} · ${d.mod||''}${d.pr?' · RD '+d.pr:''}`}));
-  R=R.filter(r=>r.at||r.rd).sort((a,b)=>(b.gap==null?1e5:Math.abs(b.gap))-(a.gap==null?1e5:Math.abs(a.gap)));
-  gc.textContent=`${R.length} ${modo==='O'?'SEs':'alimentadores'} · clique no nome para atualizar`;
-  if(!R.length){gt.innerHTML='<p style="padding:20px">Nenhum item para a seleção.</p>';return}
-  const ts=R.flatMap(d=>[d.at,d.rd]).filter(Boolean).concat(HOJE);
-  const mn=new Date(Math.min(...ts));mn.setDate(1);const mx=new Date(Math.max(...ts));mx.setMonth(mx.getMonth()+2,1);
-  const pc=t=>(t-mn)/(mx-mn)*100,px=t=>pc(t).toFixed(2)+'%',GW=Math.max(700,gt.clientWidth)*.78;
-  let mh='';for(let d=new Date(mn);d<mx;d.setMonth(d.getMonth()+1))
-    mh+=`<div class="mth" style="left:${px(d)}">${d.toLocaleDateString('pt-BR',{month:'short',year:'2-digit'})}</div>`;
-  gt.innerHTML=`<div class="gh"><div class="lb"><b>${modo==='O'?'SE':'Alimentador / SE'}</b></div><div class="tr">${mh}</div></div>`+
-  R.map(d=>{const c=ST[d.st]||C.rx,a=d.at?pc(d.at):null,b=d.rd?pc(d.rd):null;let bar='';
-    if(a!=null&&b!=null){const l=Math.min(a,b),w=Math.abs(b-a),o=w*GW/100<80;
-      const t=d.gap>0?'RD +'+d.gap+' d':d.gap<0?'AT +'+(-d.gap)+' d':'0 d';
-      bar=`<div class="br${o?' o':''}" style="left:${l}%;width:${Math.max(w,.4)}%;background:${c}"><span>${t}</span></div>`}
-    else if(a!=null)bar=`<div class="br o" style="left:${a}%;width:${Math.max(100-a,.4)}%;background:repeating-linear-gradient(90deg,${c} 0 8px,${c}66 8px 14px)"><span style="left:0;margin-left:14px;position:absolute;color:#fff">RD s/ previsão</span></div>`;
-    else bar=`<span class="tx" style="left:${b}%;color:${C.rx}">AT s/ data</span>`;
-    const op=modo==='M'&&d.pr?`abrirF('${H$(d.pep)}','RD','${H$(d.pr)}')`:`abrirF('${H$(d.pep)}','AT','${H$(d.pep)}')`;
-    return`<div class="gr"><div class="lb" onclick="${op}" title="${H$(d.se)} | PEP ${H$(d.pep)} — clique para atualizar"><b>${d.emp}</b> · ${H$(d.se.replace(/^SE /,''))}${d.ed?' ✎':''}<br><small style="color:${c}">${H$(d.sub)}</small></div>
-    <div class="tr"><div class="hoje" style="left:${px(HOJE)}"></div>${bar}
-      ${a!=null?`<div class="dt" style="left:${a}%;background:${C.az}" title="AT: ${fm(d.at)}"></div>`:''}
-      ${b!=null?`<div class="dt" style="left:${b}%;background:${C.am}" title="RD: ${fm(d.rd)}"></div>`:''}
-    </div></div>`}).join('');
-}
-
-/* ===== FORMULÁRIO ===== */
-fe.oninput=()=>{const p=fe.value.split(' — ')[0].trim();if(EMPS[p]){SEL=p;SP={t:'AT',p};PF=[];renderForm()}};
-function abrirF(pep,t,p){SEL=pep;SP={t,p};PF=[];const o=EMPS[pep];fe.value=o?`${o.pep} — ${o.se}`:'';setAba('F');scrollTo(0,0)}
-function selP(t,p){SP={t,p};PF=[];renderForm()}
-const nUp=(t,p)=>UPD.filter(u=>u.tipo===t&&u.pep===p).length;
-const tag=s=>s?`<span class="tag" style="background:${STC[s]||C.rx}">${H$(s)}</span>`:'—';
-
-function renderForm(){
-  const o=EMPS[SEL];
-  if(!o){feInfo.innerHTML='<p>Selecione um empreendimento.</p>';fp.innerHTML='<h3>Atualização do PEP</h3><p>Selecione um PEP AT ou RD.</p>';return}
-  const rds=[...o.rds].sort(),la=LAST['AT|'+o.pep]||{};
-  const pb=(t,p,sub)=>`<button class="pb ${t}${SP&&SP.t===t&&SP.p===p?' on':''}" onclick="selP('${t}','${H$(p)}')"><small>PEP ${t}</small><b>${H$(p)}</b><span>${sub} · ${nUp(t,p)} atualiz.</span></button>`;
-  feInfo.innerHTML=`<p><b>${o.emp}</b> · ${H$(o.se)}<br>Status AT: ${tag(la.st||o.rows[0].stSE)}</p>
-   <div class="peps">${pb('AT',o.pep,'1 bay/SE')}${rds.map(p=>pb('RD',p,o.rows.filter(d=>d.pr===p).length+' alim.')).join('')}</div>
-   <div class="tbl"><table><tr><th>Módulo</th><th>PEP RD</th><th>AT</th><th>RD</th><th>Acurácia</th></tr>${o.rows.map(d=>
-     `<tr><td>${H$(d.mod||'—')}</td><td>${d.pr?H$(d.pr):'<b style="color:#B92927">s/ PEP</b>'}</td><td>${fm(d.at)}${d.oAT?' ✎':''}</td><td>${fm(d.rd)}${d.oRD?' ✎':''}</td><td style="color:${AC[d.ac]}"><b>${d.ac}</b></td></tr>`).join('')}</table></div>
-   <details><summary>➕ Vincular PEP RD aos alimentadores</summary>
-     <label class="f">PEP RD<input id="nRD" placeholder="Ex.: RD-GO-2026-0001" list="lRDx"></label><datalist id="lRDx">${rds.map(p=>`<option value="${H$(p)}">`).join('')}</datalist>
-     ${o.rows.filter(d=>!d.pepRD).map((d,i)=>`<label class="ck"><input type="checkbox" class="cRD" value="${H$(d.key)}" ${d.pr?'':'checked'}> ${H$(d.mod||'Módulo '+(i+1))} ${d.pr?'<small>(atual: '+H$(d.pr)+')</small>':''}</label>`).join('')||'<p>Todos os alimentadores já têm PEP RD na base.</p>'}
-     <button class="btn" style="margin-top:8px" onclick="addRD()">🔗 Vincular</button>
-   </details>`;
-
-  if(!SP){fp.innerHTML='<h3>Atualização do PEP</h3><p>Selecione um PEP.</p>';return}
-  const L=LAST[SP.t+'|'+SP.p]||{},rows=SP.t==='AT'?o.rows:o.rows.filter(d=>d.pr===SP.p);
-  const cur=SP.t==='AT'?rows.map(d=>d.at).filter(Boolean).sort((a,b)=>a-b)[0]:rows.map(d=>d.rd).filter(Boolean).sort((a,b)=>b-a)[0];
-  const stCur=L.st||(SP.t==='AT'?rows[0]?.stSE:rows[0]?.stA)||'';
-  const H=UPD.filter(u=>u.tipo===SP.t&&u.pep===SP.p).sort((a,b)=>a.ts<b.ts?1:-1);
-  fp.innerHTML=`<h3>Atualizar PEP ${SP.t} · ${H$(SP.p)} <small>${rows.length} alimentador(es)</small></h3>
-   <p>Atual: <b>${fm(cur)}</b> · ${tag(stCur)}${L.ts?` · última atualização ${new Date(L.ts).toLocaleString('pt-BR')} por ${H$(L.us||'—')}`:''}</p>
-   <div class="fg">
-     <label class="f">📅 Data prevista de atendimento<input type="date" id="uDt" value="${iso(cur)}"></label>
-     <label class="f">🚦 Status<select id="uSt"><option value="">(manter: ${H$(stCur||'—')})</option>${STF[SP.t].map(s=>`<option>${s}</option>`).join('')}</select></label>
-     <label class="f">👤 Responsável<input id="uUs" value="${H$(localStorage.rdxatUser||'')}" placeholder="Nome"></label>
-   </div>
-   <label class="f">💬 Comentário<textarea id="uCm" rows="3" placeholder="Justificativa, restrições, próximos passos..."></textarea></label>
-   <label class="f">📎 Evidências (fotos para relatório fotográfico e/ou PDF)<input type="file" id="uFl" multiple accept="image/*,.pdf"></label>
-   <div class="thumbs" id="uPv"></div>
-   <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn vd" onclick="salvar()">💾 Salvar atualização</button>
-     <button class="btn" onclick="relFoto()">📸 Relatório fotográfico</button></div>
-   <h3 style="margin-top:16px">Histórico <small>${H.length} registro(s)</small></h3>
-   ${H.map(u=>`<div class="hi ${u.tipo}"><div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px">
-       <span><b>${new Date(u.ts).toLocaleString('pt-BR')}</b> · ${H$(u.us||'—')}</span>
-       <span>📅 ${u.dt?fm(pIso(u.dt)):'—'} · ${tag(u.st)} <a href="#" onclick="delU('${u.id}');return false" style="color:#B92927;margin-left:8px">🗑</a></span></div>
-       ${u.cm?`<p style="margin:6px 0">${H$(u.cm)}</p>`:''}
-       <div class="thumbs">${(u.files||[]).map((x,i)=>thumb(x,`verF('${u.id}',${i})`)).join('')}</div></div>`).join('')||'<p>Sem atualizações.</p>'}`;
-  uFl.onchange=async()=>{for(const fl of uFl.files)PF.push(await rdF(fl));uFl.value='';pv()};
-  pv();
-}
-const thumb=(x,oc,cap)=>`<div>${x.t.startsWith('image/')?`<img src="${x.d}" onclick="${oc}">`:`<div class="pdf" onclick="${oc}">📄 PDF</div>`}
-  ${cap!=null?cap:`<span>${H$(x.c||x.n)}</span>`}</div>`;
-function pv(){uPv.innerHTML=PF.map((x,i)=>thumb(x,`verD(PF[${i}])`,
-  `<input placeholder="Legenda" value="${H$(x.c||'')}" oninput="PF[${i}].c=this.value"><a href="#" onclick="PF.splice(${i},1);pv();return false" style="color:#B92927">remover</a>`)).join('')}
-
-const rdF=f=>new Promise(ok=>{const r=new FileReader();r.onload=()=>{
-  if(!f.type.startsWith('image/'))return ok({n:f.name,t:f.type||'application/pdf',d:r.result,c:''});
-  const im=new Image();im.onload=()=>{const s=Math.min(1,1600/Math.max(im.width,im.height)),c=document.createElement('canvas');
-    c.width=im.width*s;c.height=im.height*s;c.getContext('2d').drawImage(im,0,0,c.width,c.height);
-    ok({n:f.name,t:'image/jpeg',d:c.toDataURL('image/jpeg',.75),c:''})};im.src=r.result};r.readAsDataURL(f)});
-const verD=x=>fetch(x.d).then(r=>r.blob()).then(b=>window.open(URL.createObjectURL(b),'_blank'));
-const verF=(id,i)=>verD(UPD.find(u=>u.id===id).files[i]);
-
-async function salvar(){
-  const o=EMPS[SEL];if(!uDt.value&&!uSt.value&&!uCm.value.trim()&&!PF.length)return alert('Preencha ao menos um campo.');
-  if(!uUs.value.trim())return alert('Informe o responsável.');
-  localStorage.rdxatUser=uUs.value.trim();
-  await tx('upd','readwrite',s=>s.put({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),tipo:SP.t,pep:SP.p,
-    pepAT:o.pep,se:o.se,emp:o.emp,dt:uDt.value,st:uSt.value,cm:uCm.value.trim(),us:uUs.value.trim(),ts:new Date().toISOString(),files:PF}));
-  PF=[];await loadDB();renderForm();
-}
-async function delU(id){if(!confirm('Excluir esta atualização?'))return;await tx('upd','readwrite',s=>s.delete(id));await loadDB();renderForm()}
-async function addRD(){
-  const p=nRD.value.trim(),ks=[...document.querySelectorAll('.cRD:checked')].map(c=>c.value);
-  if(!p||!ks.length)return alert('Informe o PEP RD e marque ao menos um alimentador.');
-  await tx('lnk','readwrite',s=>ks.forEach(k=>s.put({k,pep:p})));await loadDB();SP={t:'RD',p};renderForm();
-}
-
-function relFoto(){
-  const o=EMPS[SEL],H=UPD.filter(u=>u.tipo===SP.t&&u.pep===SP.p).sort((a,b)=>a.ts<b.ts?-1:1),L=LAST[SP.t+'|'+SP.p]||{};
-  if(!H.length)return alert('Sem atualizações para este PEP.');
-  const w=window.open('','_blank');
-  w.document.write(`<html><head><meta charset="UTF-8"><title>Relatório fotográfico ${H$(SP.p)}</title><style>
-   body{font-family:Segoe UI,Arial;color:#32306E;margin:24px}h1{background:#065DAC;color:#fff;padding:12px;margin:0 0 12px;font-size:20px}
-   table{border-collapse:collapse;width:100%;margin-bottom:14px}td{border:1px solid #ccd;padding:6px}td:first-child{background:#F3F5F8;font-weight:700;width:28%}
-   .s{page-break-inside:avoid;border-left:5px solid ${SP.t==='AT'?'#065DAC':'#EAA02E'};padding:6px 12px;margin:14px 0}
-   .g{display:grid;grid-template-columns:1fr 1fr;gap:10px}.g figure{margin:0;page-break-inside:avoid}.g img{width:100%;max-height:300px;object-fit:contain;border:1px solid #ddd}
-   figcaption{font-size:12px;text-align:center}</style></head><body>
-   <h1>Relatório Fotográfico · PEP ${SP.t} ${H$(SP.p)}</h1>
-   <table><tr><td>Distribuidora</td><td>${o.emp}</td></tr><tr><td>Instalação</td><td>${H$(o.se)}</td></tr>
-   <tr><td>PEP AT</td><td>${H$(o.pep)}</td></tr><tr><td>Data prevista vigente</td><td>${L.dt?fm(pIso(L.dt)):'—'}</td></tr>
-   <tr><td>Status vigente</td><td>${H$(L.st||'—')}</td></tr><tr><td>Emitido em</td><td>${new Date().toLocaleString('pt-BR')}</td></tr></table>
-   ${H.map(u=>`<div class="s"><b>${new Date(u.ts).toLocaleString('pt-BR')}</b> · ${H$(u.us)} · Previsão: ${u.dt?fm(pIso(u.dt)):'—'} · Status: ${H$(u.st||'—')}
-     ${u.cm?`<p>${H$(u.cm)}</p>`:''}<div class="g">${(u.files||[]).filter(x=>x.t.startsWith('image/')).map((x,i)=>
-     `<figure><img src="${x.d}"><figcaption>Foto ${i+1}${x.c?' – '+H$(x.c):''}</figcaption></figure>`).join('')}</div>
-     ${(u.files||[]).filter(x=>!x.t.startsWith('image/')).map(x=>`<p>📄 Anexo: ${H$(x.n)}</p>`).join('')}</div>`).join('')}
-   </body></html>`);
-  w.document.close();setTimeout(()=>w.print(),800);
-}
-
-/* backup / restauração (compartilhar entre usuários) */
-bBk.onclick=async()=>{const L=await tx('lnk','readonly',o=>o.getAll());
-  const b=new Blob([JSON.stringify({upd:UPD,lnk:L})],{type:'application/json'}),a=document.createElement('a');
-  a.href=URL.createObjectURL(b);a.download=`RDxAT_formulario_${iso(HOJE)}.json`;a.click()};
-fBk.onchange=e=>{const r=new FileReader();r.onload=async()=>{try{const j=JSON.parse(r.result);
-  await tx('upd','readwrite',s=>(j.upd||[]).forEach(u=>s.put(u)));await tx('lnk','readwrite',s=>(j.lnk||[]).forEach(l=>s.put(l)));
-  await loadDB();renderForm();alert(`Restaurado: ${(j.upd||[]).length} atualizações.`)}catch(x){alert('Arquivo inválido.')}};
-  r.readAsText(e.target.files[0]);fBk.value=''};
-
-/* ===== EXPORTAÇÃO ===== */
-bExp.onclick=()=>{
-  const row=d=>({'Distribuidora':d.emp,'Regional':d.reg,'Demandante':d.dem,'Tipo de obra':d.tipo,'PEP AT':d.pep,'PEP RD':d.pr||'',
-    'Instalação':d.se,'Módulo':d.mod,'Qtde':d.qt,'Status SE':d.stSE,'Status alimentador':d.stA,'Fase obra RD':d.fase,
-    'Data AT (Proj. Energ.)':d.at||'','Origem data AT':d.oAT?'Formulário':'Base','Data RD (Alimentador)':d.rd||'','Origem data RD':d.oRD?'Formulário':'Base',
-    'Gap (dias)':d.gap??'','Quem atrasa':d.gap>0?'RD':d.gap<0?'AT':'','Status obra':d.st,'Status SE (pior)':wSE[d.se]||'','Faixa':FX[d.st],
-    'Fotografia':d.cls,'Acurácia RD x AT':d.ac,'Pendência':d.pend||'OK'});
-  const wb=XLSX.utils.book_new(),add=(a,n,fn=row)=>{const ws=XLSX.utils.json_to_sheet(a.length?a.map(fn):[{}],{cellDates:true,dateNF:'dd/mm/yyyy'});
-    if(a.length)ws['!cols']=Object.keys(fn(a[0])).map(k=>({wch:Math.max(12,k.length+2)}));
-    if(ws['!ref'])ws['!autofilter']={ref:ws['!ref']};XLSX.utils.book_append_sheet(wb,ws,n)};
-  const V=VIS.length?VIS:DATA;
-  add(V,'Base_Dash');add(V.filter(d=>d.pend),'Pendencias');add(V.filter(d=>d.cls==='Sem rede'),'Bays_sem_carga');
-  add(V.filter(d=>d.ac!=='Casado'),'Acuracia_divergente');
-  add([...UPD].sort((a,b)=>a.ts<b.ts?1:-1),'Atualizacoes',u=>({'Data/hora':new Date(u.ts),'Responsável':u.us,'Tipo':u.tipo,'PEP':u.pep,
-    'PEP AT':u.pepAT,'Distribuidora':u.emp,'Instalação':u.se,'Data prevista':u.dt?pIso(u.dt):'','Status':u.st||'(mantido)',
-    'Comentário':u.cm,'Evidências':(u.files||[]).map(x=>x.c||x.n).join(' | ')}));
-  const tg=[modo==='O'?'SE':'ALIM',fAno.value,fEmp.value,fReg.value,fDem.value,fHz.value&&fHz.value+'d',selSt,selAc,selMes].filter(Boolean).join('_').replace(/\s+/g,'-');
-  XLSX.writeFile(wb,`RDxAT_${iso(HOJE)}_${tg}.xlsx`);
+/* ---------- IDGen: Interface_ID definitivo INT-{UF}-{SLUGSE}-{SEQ} ---------- */
+const IDGen={
+  next(pep){
+    const at=S.obrasAT[pep];if(!at)return'';
+    const key=`${at.uf}-${U.slug(at.se)}`,used=new Set(Object.values(S.interfaces).map(i=>i.intId).filter(Boolean));
+    let n=S.config.seq[key]||0,id;
+    do{n++;id=`INT-${key}-${String(n).padStart(4,'0')}`}while(used.has(id));
+    S.config.seq[key]=n;return id;
+  }
 };
-loadDB();
+
+/* ---------- Model: visão consolidada por interface ---------- */
+const Model={
+  ver:0,_c:{},
+  touch(){this.ver++},
+  idx(){if(this._c.iv!==this.ver){const m={};Object.entries(S.links).forEach(([r,l])=>(m[l.pep]=m[l.pep]||[]).push(r));this._c.idx=m;this._c.iv=this.ver}return this._c.idx},
+  rdOf(p){return this.idx()[p]||[]},
+  label(i,at){return i.intId||`SUG-${at.uf}-${U.slug(at.se)}-${i.pep.split('.').pop()}`},
+  view(pep){
+    const i=S.interfaces[pep],at=S.obrasAT[pep];if(!i||!at)return null;
+    const rds=this.rdOf(pep).map(r=>S.obrasRD[r]).filter(Boolean).sort((a,b)=>(a.dEn||'9').localeCompare(b.dEn||'9'));
+    const dl=rds.map(r=>r.dEn).filter(Boolean).sort(),dRD=dl[dl.length-1]||'',dAT=at.dEn||'',delta=dAT&&dRD?U.days(dRD,dAT):null;
+    const dp=S.deParaSE[at.sigla]||{},kr=new Set(rds.flatMap(r=>r.keys||[])),invRD=rds.reduce((t,r)=>t+(r.custo||0),0);
+    return{pep,i,at,rds,id:this.label(i,at),se:at.se,sigla:at.sigla,uf:at.uf,distr:'EQTL-'+at.uf,
+      regional:i.regional||U.mode(rds.map(r=>r.regional).filter(Boolean))||('EQTL-'+at.uf),municipio:i.municipio||dp.municipio||U.seName(at.se),
+      status:i.status,resp:i.resp||'',ano:dAT.slice(0,4),dAT,tipoAT:at.tipoData,dRD,latest:rds.find(r=>r.dEn===dRD)||null,delta,sem:U.sem(delta),
+      nPep:rds.reduce((t,r)=>t+r.peps.length,0),semPep:rds.filter(r=>!r.peps.length).length,invAT:at.invPrev,invRD,invRDnull:rds.filter(r=>r.custo==null).length,
+      invT:(at.invPrev||0)+invRD,cats:[...new Set(rds.map(r=>r.pi).filter(Boolean))],score:i.score,amb:i.amb,
+      idle:(at.keys||[]).filter(k=>!kr.has(k)),semFonte:dAT?rds.filter(r=>r.dEn&&r.dEn<dAT):[],
+      desal:dAT?rds.filter(r=>r.prevAT&&Math.abs(U.days(r.prevAT,dAT))>30):[],
+      age:Math.max(0,U.days(U.today(),(i.criado||U.now()).slice(0,10)))};
+  },
+  all(){if(this._c.av!==this.ver){this._c.all=Object.keys(S.interfaces).map(p=>this.view(p)).filter(Boolean);this._c.av=this.ver}return this._c.all},
+  filtered(){return this.all().filter(v=>Filters.match(v))},
+  byPep(p){return this.all().find(v=>v.pep===p)||this.view(p)},
+  orphans(){return Object.values(S.obrasRD).filter(r=>!S.links[r.id])}
+};
+
+/* ---------- Filters: filtros globais persistentes ---------- */
+const Filters={
+  K:[['uf','Distribuidora'],['reg','Regional'],['mun','Município'],['se','Subestação'],['st','Status'],['resp','Responsável'],['ano','Ano Energização'],['cat','Categoria (PI)']],
+  get F(){return S.config.filters||(S.config.filters={})},
+  match(v){const F=this.F;return(!F.uf||v.distr===F.uf)&&(!F.reg||v.regional===F.reg)&&(!F.mun||v.municipio===F.mun)&&(!F.se||v.se===F.se)&&(!F.st||v.status===F.st)&&(!F.resp||v.resp===F.resp)&&(!F.ano||v.ano===F.ano)&&(!F.cat||v.cats.includes(F.cat))},
+  matchAT(a){const v=Model.byPep(a.pep);return v?this.match(v):true},
+  matchRD(r){
+    const F=this.F;if(F.uf&&'EQTL-'+r.uf!==F.uf)return false;if(F.reg&&r.regional!==F.reg)return false;if(F.cat&&r.pi!==F.cat)return false;
+    if(F.mun||F.se||F.st||F.resp||F.ano){const l=S.links[r.id];if(!l)return false;const v=Model.byPep(l.pep);if(!v)return false;
+      return(!F.mun||v.municipio===F.mun)&&(!F.se||v.se===F.se)&&(!F.st||v.status===F.st)&&(!F.resp||v.resp===F.resp)&&(!F.ano||v.ano===F.ano)}
+    return true;
+  },
+  opts(k){
+    const A=Model.all(),R=Object.values(S.obrasRD),u=a=>[...new Set(a.filter(Boolean))].sort();
+    return{uf:u(A.map(v=>v.distr).concat(R.map(r=>'EQTL-'+r.uf))),reg:u(A.map(v=>v.regional).concat(R.map(r=>r.regional))),mun:u(A.map(v=>v.municipio)),se:u(A.map(v=>v.se)),
+      st:['Sugerida','Em Ajuste','Confirmada','Rejeitada','Encerrada'],resp:u(A.map(v=>v.resp)),ano:u(A.map(v=>v.ano)),cat:u(R.map(r=>r.pi))}[k];
+  },
+  set(k,v){this.F[k]=v;Store.save();App.render()},
+  clear(){S.config.filters={};Store.save();App.render()},
+  render(){
+    const F=this.F;
+    U.$('fbar').innerHTML=this.K.map(([k,l])=>`<div><label>${l}</label><select onchange="Filters.set('${k}',this.value)"><option value="">Todos</option>${this.opts(k).map(o=>`<option ${F[k]===o?'selected':''}>${U.esc(o)}</option>`).join('')}</select></div>`).join('')
+      +`<div><label>&nbsp;</label><button class="btn gh" onclick="Filters.clear()">✕ Limpar</button></div>`;
+    U.$('chips').innerHTML=this.K.filter(([k])=>F[k]).map(([k,l])=>`<span class="chip">${l}: ${U.esc(F[k])} <b onclick="Filters.set('${k}','')">×</b></span>`).join('');
+  }
+};
+
+/* ---------- Nav: roteamento seguro (usa módulos futuros quando existirem) ---------- */
+const Nav={
+  ex:n=>{try{return typeof eval(n)!=='undefined'}catch(e){return false}},
+  openIF(p){U.$('gres').style.display='none';if(this.ex('Cad')&&Cad.open)Cad.open(p);else this.detail(p)},
+  openAT(p){U.$('gres').style.display='none';if(this.ex('ATg')&&ATg.find)ATg.find(p);else this.detail(p)},
+  openRD(id){U.$('gres').style.display='none';if(this.ex('RDg')&&RDg.find)RDg.find(id);else{const l=S.links[id];l?this.detail(l.pep):this.rdDetail(id)}},
+  rdDetail(id){const r=S.obrasRD[id],p=Motor.P[id];if(!r)return;
+    UI.modal({title:`Obra RD ${id} — órfã`,body:`<p>${U.esc(r.desc)}</p><p class="mut">Sigla extraída: <b>${r.sigla||'—'}</b> • Alimentadores: ${r.keys.join(', ')||'—'} • Energ.: ${U.fmtD(r.dEn)}</p>
+      <p>${p?`Melhor candidata: <b>${U.esc(p.best.pep)}</b> (score ${p.best.total}, abaixo do limiar ${S.config.thr})<br><span class="mut">${Motor.detTxt(p.best)}</span>`:'Nenhuma AT correlacionável na mesma distribuidora.'}</p>`})},
+  detail(p){
+    const v=Model.byPep(p);if(!v)return;
+    UI.modal({title:`${v.id} ${v.i.intId?'':'(sugestão)'}`,wide:true,body:`
+      <div class="grid g4">${[['SE',v.se],['PEP AT',v.pep],['Energ. AT',U.fmtD(v.dAT)+' '+v.tipoAT],['Delta',U.dBadge(v.delta)],['Status',U.stBadge(v.status)],['Score médio',v.score+' '+`<span class="badge ${U.conf(v.score)[1]}">${U.conf(v.score)[0]}</span>`],['Regional',v.regional],['Município',v.municipio]]
+        .map(([l,x])=>`<div class="mini"><span class="fl">${l}</span>${x}</div>`).join('')}</div><br>
+      ${v.amb?'<div class="warn">⚠ Vínculo ambíguo: a diferença entre a 1ª e a 2ª candidata é menor que 10 pontos (ou o vínculo veio por alias).</div>':''}
+      ${v.idle.length?`<div class="warn">Bays sem obra RD: <b>${v.idle.join(', ')}</b></div>`:''}
+      ${v.semFonte.length?`<div class="err">⚠ RD sem fonte: ${v.semFonte.map(r=>r.id).join(', ')}</div>`:''}
+      <div class="tw"><table><thead><tr><th>ID</th><th>Descrição</th><th>PI</th><th>Alim.</th><th>PEPs</th><th>Energ. RD</th><th>Custo</th><th>Score</th><th>Δ</th></tr></thead><tbody>
+      ${v.rds.map(r=>{const l=S.links[r.id];return`<tr><td>${r.id}</td><td>${U.esc(U.tr(r.desc,50))}</td><td>${r.pi}</td><td>${r.keys.join('/')||'—'}</td><td>${r.peps.map(x=>`<span class="pchip">${U.esc(x)}</span>`).join('')||'<span class="badge b-r">sem PEP</span>'}</td>
+        <td>${U.fmtD(r.dEn)}</td><td>${U.fmtR(r.custo)}</td><td title="${Motor.detTxt(l.det)}">${l.score} <span class="mut">${l.orig}</span></td><td>${U.dBadge(v.dAT&&r.dEn?U.days(r.dEn,v.dAT):null)}</td></tr>`}).join('')||'<tr><td colspan="9" class="mut">Nenhuma obra RD vinculada</td></tr>'}</tbody></table></div>`});
+  }
+};
+
+/* ---------- Search: busca global ---------- */
+const Search={
+  run(q){
+    const box=U.$('gres');q=U.N(q);if(q.length<2){box.style.display='none';return}
+    const res=[];
+    Model.all().forEach(v=>{if(U.N(v.id+' '+v.se+' '+v.pep+' '+v.sigla+' '+v.resp).includes(q))res.push(`<div onmousedown="Nav.openIF(${U.q(v.pep)})"><b>🔗 ${U.esc(v.id)}</b> — ${U.esc(v.se)} • ${U.esc(v.pep)} ${U.stBadge(v.status)}</div>`)});
+    Object.values(S.obrasAT).forEach(a=>{if(U.N(a.pep+' '+a.se+' '+a.sigla+' '+a.equip.join(' ')).includes(q))res.push(`<div onmousedown="Nav.openAT(${U.q(a.pep)})"><b>⚡ AT ${U.esc(a.pep)}</b> — ${U.esc(a.se)} (${U.esc(a.tipo)})</div>`)});
+    Object.values(S.obrasRD).forEach(r=>{if(U.N(r.id+' '+r.desc+' '+r.peps.join(' ')).includes(q))res.push(`<div onmousedown="Nav.openRD(${U.q(r.id)})"><b>🛠 RD ${U.esc(r.id)}</b> — ${U.esc(U.tr(r.desc,60))} ${S.links[r.id]?'':'<span class="badge b-r">órfã</span>'}</div>`)});
+    box.innerHTML=res.slice(0,25).join('')||'<div class="mut">Nenhum resultado</div>';box.style.display='block';
+  }
+};
+
+/* ---------- Aba provisória: Prévia de Vínculos (só sem outros módulos) ---------- */
+const Prev={
+  open:new Set(),
+  render(){
+    const V=Model.filtered().sort((a,b)=>b.rds.length-a.rds.length||a.id.localeCompare(b.id)),st=Motor.stats(),O=Model.orphans().filter(r=>Filters.matchRD(r));
+    U.$('t-prev').innerHTML=`<div class="grid g6">${[['Pares avaliados',st.pares,'--azul'],['Alta confiança',st.alta,'--verde'],['Média',st.media,'--amarelo'],['Baixa',st.baixa,'--vermelho'],['Ambíguos',st.amb,'--laranja'],['RD órfãs',st.orfas,'--vermelho']]
+      .map(([l,v,c])=>`<div class="kpi" style="border-top-color:var(${c})"><div class="l">${l}</div><div class="v" style="color:var(${c})">${v}</div></div>`).join('')}</div><br>
+      <div class="card"><h3>🔗 Interfaces sugeridas (${V.length}) <span class="r row"><button class="btn" ${Perm.dis('motor')} onclick="Prev.run()">⚙ Executar Motor</button><button class="btn r" onclick="App.reset()">↺ Restaurar base</button></span></h3>
+      <div class="tw"><table><thead><tr><th></th><th>Interface</th><th>SE</th><th>PEP AT</th><th>Obras RD</th><th>Score</th><th>Energ. AT</th><th>Energ. RD (+tardia)</th><th>Δ</th><th>Status</th></tr></thead><tbody>
+      ${V.map(v=>`<tr style="cursor:pointer" onclick="Prev.tog(${U.q(v.pep)})"><td>${v.rds.length?(this.open.has(v.pep)?'▾':'▸'):''}</td><td><b>${U.esc(v.id)}</b> ${v.amb?'⚠':''}</td><td>${U.esc(v.se)}</td><td>${U.esc(v.pep)}</td><td>${v.rds.length}</td>
+        <td><span class="badge ${U.conf(v.score)[1]}">${v.score}</span></td><td>${U.fmtD(v.dAT)} <span class="mut">${v.tipoAT}</span></td><td>${U.fmtD(v.dRD)}</td><td>${U.dBadge(v.delta)}</td><td>${U.stBadge(v.status)}</td></tr>
+        ${this.open.has(v.pep)?v.rds.map(r=>`<tr><td></td><td colspan="3" class="mut">↳ ${r.id} — ${U.esc(U.tr(r.desc,70))}</td><td>${r.pi}</td><td>${S.links[r.id].score}</td><td></td><td>${U.fmtD(r.dEn)}</td><td>${U.dBadge(v.dAT&&r.dEn?U.days(r.dEn,v.dAT):null)}</td><td><a onclick="event.stopPropagation();Nav.detail(${U.q(v.pep)})">detalhe</a></td></tr>`).join(''):''}`).join('')}
+      </tbody></table></div></div>
+      <div class="card"><h3>🔴 Obras RD órfãs (${O.length})</h3><div class="tw" style="max-height:300px"><table><thead><tr><th>ID</th><th>Distr.</th><th>Descrição</th><th>Sigla</th><th>Melhor candidata</th></tr></thead><tbody>
+      ${O.map(r=>{const p=Motor.P[r.id];return`<tr style="cursor:pointer" onclick="Nav.rdDetail(${U.q(r.id)})"><td>${r.id}</td><td>${r.distr}</td><td>${U.esc(U.tr(r.desc,60))}</td><td>${r.sigla||'—'}</td><td>${p?U.esc(p.best.pep)+' ('+p.best.total+')':'—'}</td></tr>`}).join('')||'<tr><td colspan="5" class="mut">Nenhuma</td></tr>'}</tbody></table></div>
+      <p class="mut">Aba provisória do Módulo 2. Ela some quando o Módulo 3 (Dashboard e Gantt) for adicionado.</p></div>`;
+  },
+  tog(p){this.open.has(p)?this.open.delete(p):this.open.add(p);this.render()},
+  run(){if(!Perm.guard('motor'))return;Motor.run(true);Store.save();App.render();const s=Motor.stats();UI.toast(`Motor: ${s.vinc} vínculos • ${s.amb} ambíguos • ${s.orfas} órfãs`)}
+};
+
+/* ---------- Ganchos no kernel ---------- */
+App.on('afterLoad',()=>{Motor.run();if(!App.T.length)App.reg('prev','🔗 Prévia de Vínculos',Prev,1)});
+App.on('render',()=>{Model.touch();Filters.render()});
+App.on('badges',b=>{const n=Model.orphans().length;if(App.T.some(t=>t.id==='prev')&&n)b.prev=n});
+App.on('boot',()=>{
+  const q=U.$('gq'),run=U.debounce(()=>Search.run(q.value),180);
+q.addEventListener('input',run);q.addEventListener('focus',run);
+  q.addEventListener('blur',()=>setTimeout(()=>U.$('gres').style.display='none',150));
+  q.addEventListener('keydown',e=>{if(e.key==='Enter'){const f=U.$('gres').querySelector('div[onmousedown]');if(f)f.dispatchEvent(new MouseEvent('mousedown'))}});
+});
 </script>
+
+<!-- ==================== MÓDULO 3 — DASHBOARD E GANTT ==================== -->
+<style>
+.m3bar{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:12px}
+.m3bar .lb{width:150px;flex:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#32306E}
+.m3bar .tr{flex:1;background:#eef1f5;border-radius:4px;height:16px;overflow:hidden}
+.m3bar .fi{height:100%;border-radius:4px}
+.m3bar .vl{width:48px;text-align:right;font-weight:600}
+.gx{min-width:960px}
+.gx-h,.gx-r{display:flex;border-bottom:1px solid #e3e7ee}
+.gx-h{background:#065DAC;color:#fff;font-weight:600;position:sticky;top:0;z-index:2}
+.gx-r:hover{background:#f3f7fc;cursor:pointer}
+.gx-l{width:270px;flex:none;padding:5px 8px;font-size:12px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.gx-k{position:relative;flex:1;height:28px}
+.gx-m{position:absolute;top:0;bottom:0;border-left:1px dashed #dde3ea;font-size:10px;padding-left:2px}
+.gx-h .gx-m{border-left-color:rgba(255,255,255,.35);line-height:28px}
+.gx-s{position:absolute;top:10px;height:8px;background:rgba(50,48,110,.18);border-radius:4px}
+.gx-at,.gx-rd{position:absolute;top:7px;transform:translateX(-50%)}
+.gx-at{width:12px;height:12px;background:#065DAC;transform:translateX(-50%) rotate(45deg);top:8px}
+.gx-rd{width:11px;height:11px;border-radius:50%;border:2px solid #fff;top:7px}
+.gx-hj{position:absolute;top:0;bottom:0;border-left:2px solid #EAA02E;z-index:1}
+.gx-lg span{margin-right:14px;font-size:12px}
+</style>
+<script>
+"use strict";
+const C3={az:'#065DAC',vd:'#0B9454',am:'#EAA02E',vm:'#B92927',rx:'#32306E'};
+const dd3=s=>s?Date.parse(s):NaN, dif3=(a,b)=>Math.round((dd3(a)-dd3(b))/864e5);
+
+/* ---------- Helper: barras horizontais ---------- */
+const bars3=L=>{const m=Math.max(1,...L.map(x=>x[1]));return L.map(([l,v,c])=>`<div class="m3bar"><span class="lb" title="${U.esc(l)}">${U.esc(l)}</span><div class="tr"><div class="fi" style="width:${v/m*100}%;background:${c}"></div></div><span class="vl">${v}</span></div>`).join('')||'<p class="mut">Sem dados</p>'};
+
+/* ---------- Dashboard ---------- */
+const Dash={
+  render(){
+    const V=Model.filtered(),O=Model.orphans().filter(r=>Filters.matchRD(r)),cnt=k=>V.filter(v=>v.status===k).length;
+    const conf=cnt('Confirmada'),pc=V.length?Math.round(conf/V.length*100):0,nRD=V.reduce((t,v)=>t+v.rds.length,0),
+      inv=V.reduce((t,v)=>t+(v.invT||0),0),sf=V.filter(v=>v.semFonte.length).length,amb=V.filter(v=>v.amb).length;
+    const K=[['Interfaces',V.length,C3.az],['Confirmadas',`${conf} <small>(${pc}%)</small>`,C3.vd],['Em Ajuste',cnt('Em Ajuste'),C3.am],['Obras RD vinculadas',nRD,C3.az],
+      ['RD órfãs',O.length,C3.vm],['Interfaces c/ RD sem fonte',sf,C3.vm],['Ambíguas',amb,C3.am],['Investimento total',U.fmtR(inv),C3.rx]];
+    const stC={'Sugerida':C3.az,'Em Ajuste':C3.am,'Confirmada':C3.vd,'Rejeitada':C3.vm,'Encerrada':C3.rx};
+    const grp=f=>{const m={};V.forEach(v=>{const k=f(v)||'—';m[k]=(m[k]||0)+1});return m};
+    const reg=Object.entries(grp(v=>v.regional)).sort((a,b)=>b[1]-a[1]).slice(0,12).map(([k,n])=>[k,n,C3.az]);
+    const ano=Object.entries(grp(v=>v.ano)).sort().map(([k,n])=>[k,n,C3.rx]);
+    const F={'RD antes da AT (sem fonte)':[0,C3.vm],'0 a 30 dias':[0,C3.vd],'31 a 90 dias':[0,C3.am],'> 90 dias (bay ocioso)':[0,C3.vm],'Sem data':[0,'#9aa3af']};
+    V.forEach(v=>v.rds.forEach(r=>{const k=!(v.dAT&&r.dEn)?'Sem data':(d=>d<0?'RD antes da AT (sem fonte)':d<=30?'0 a 30 dias':d<=90?'31 a 90 dias':'> 90 dias (bay ocioso)')(dif3(r.dEn,v.dAT));F[k][0]++}));
+    const R=V.map(v=>{const x=[];if(v.semFonte.length)x.push(['🔴 RD sem fonte: '+v.semFonte.length,3]);if(v.desal.length)x.push(['🟡 Prev. AT desalinhada: '+v.desal.length,2]);
+      if(v.amb)x.push(['🟡 Ambígua',1]);if(v.idle.length)x.push(['🟡 Bays ociosos: '+v.idle.length,1]);if(!v.rds.length)x.push(['⚪ Sem RD',1]);return{v,x,p:x.reduce((t,y)=>t+y[1],0)}})
+      .filter(o=>o.p).sort((a,b)=>b.p-a.p).slice(0,15);
+    U.$('t-dash').innerHTML=`<div class="grid g4">${K.map(([l,v,c])=>`<div class="kpi" style="border-top-color:${c}"><div class="l">${l}</div><div class="v" style="color:${c}">${v}</div></div>`).join('')}</div><br>
+      <div class="grid g2" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div class="card"><h3 style="color:${C3.az}">📌 Interfaces por status</h3>${bars3(Object.keys(stC).map(k=>[k,cnt(k),stC[k]]))}</div>
+        <div class="card"><h3 style="color:${C3.az}">⏱ Defasagem RD × AT (por obra RD)</h3>${bars3(Object.entries(F).map(([k,[n,c]])=>[k,n,c]))}</div>
+        <div class="card"><h3 style="color:${C3.az}">🗺 Interfaces por regional (top 12)</h3>${bars3(reg)}</div>
+        <div class="card"><h3 style="color:${C3.az}">📅 Interfaces por ano de energização AT</h3>${bars3(ano)}</div>
+      </div>
+      <div class="card"><h3 style="color:${C3.vm}">🚨 Top 15 interfaces em risco</h3><div class="tw"><table><thead><tr><th>Interface</th><th>SE</th><th>Status</th><th>Energ. AT</th><th>Riscos</th></tr></thead><tbody>
+      ${R.map(o=>`<tr style="cursor:pointer" onclick="Nav.openIF(${U.q(o.v.pep)})"><td><b>${U.esc(o.v.id)}</b></td><td>${U.esc(o.v.se)}</td><td>${U.stBadge(o.v.status)}</td><td>${U.fmtD(o.v.dAT)}</td><td>${o.x.map(y=>y[0]).join(' • ')}</td></tr>`).join('')||`<tr><td colspan="5" style="color:${C3.vd}">✅ Nenhum risco identificado</td></tr>`}
+      </tbody></table></div></div>`;
+  }
+};
+
+/* ---------- Gantt: AT (◆) × RD (●) na linha do tempo ---------- */
+const Gantt={
+  sort:'data',only:'',
+  render(){
+    let V=Model.filtered().filter(v=>v.dAT||v.rds.some(r=>r.dEn));
+    if(this.only)V=V.filter(v=>v.semFonte.length||v.desal.length);
+    V.sort(this.sort==='risco'?(a,b)=>b.semFonte.length-a.semFonte.length||(a.dAT||'9').localeCompare(b.dAT||'9'):(a,b)=>(a.dAT||'9').localeCompare(b.dAT||'9'));
+    const ctl=`<div class="row" style="gap:10px;margin-bottom:10px"><label>Ordenar <select onchange="Gantt.sort=this.value;Gantt.render()"><option value="data" ${this.sort==='data'?'selected':''}>Energização AT</option><option value="risco" ${this.sort==='risco'?'selected':''}>Risco</option></select></label>
+      <label><input type="checkbox" ${this.only?'checked':''} onchange="Gantt.only=this.checked?'1':'';Gantt.render()"> Só interfaces em risco</label></div>`;
+    if(!V.length){U.$('t-gantt').innerHTML=`<div class="card"><h3>📅 Gantt AT × RD</h3>${ctl}<p class="mut">Nenhuma interface com datas.</p></div>`;return}
+    const T=V.flatMap(v=>[v.dAT,...v.rds.map(r=>r.dEn)]).filter(Boolean).map(dd3).concat(Date.now());
+    const a0=new Date(Math.min(...T)),b0=new Date(Math.max(...T)),a=new Date(a0.getFullYear(),a0.getMonth()-1,1),b=new Date(b0.getFullYear(),b0.getMonth()+2,1);
+    const A=+a,SP=+b-A,x=t=>((t-A)/SP*100).toFixed(2)+'%',M=[];for(const m=new Date(a);m<b;m.setMonth(m.getMonth()+1))M.push(new Date(m));
+    const big=M.length>24,head=M.map(m=>`<div class="gx-m" style="left:${x(+m)}">${!big||m.getMonth()%3===0?String(m.getMonth()+1).padStart(2,'0')+'/'+String(m.getFullYear()).slice(2):''}</div>`).join('');
+    const grid=M.map(m=>`<div class="gx-m" style="left:${x(+m)}"></div>`).join(''),hj=`<div class="gx-hj" style="left:${x(Date.now())}" title="Hoje"></div>`;
+    const rows=V.slice(0,300).map(v=>{
+      const ds=[v.dAT,...v.rds.map(r=>r.dEn)].filter(Boolean).map(dd3),lo=Math.min(...ds),hi=Math.max(...ds);
+      const rd=v.rds.filter(r=>r.dEn).map(r=>{const bad=v.dAT&&r.dEn<v.dAT;return`<div class="gx-rd" style="left:${x(dd3(r.dEn))};background:${bad?C3.vm:C3.vd}" title="RD ${U.esc(r.id)} • ${U.fmtD(r.dEn)}${bad?' • SEM FONTE':''}"></div>`}).join('');
+      return`<div class="gx-r" onclick="Nav.openIF(${U.q(v.pep)})"><div class="gx-l" title="${U.esc(v.se)}">${v.semFonte.length?'🔴':v.desal.length?'🟡':'🟢'} <b>${U.esc(v.id)}</b> <span class="mut">${U.esc(v.se)}</span></div>
+        <div class="gx-k">${grid}${hj}<div class="gx-s" style="left:${x(lo)};width:calc(${x(hi)} - ${x(lo)})"></div>${v.dAT?`<div class="gx-at" style="left:${x(dd3(v.dAT))}" title="AT ${U.esc(v.pep)} • ${U.fmtD(v.dAT)} ${v.tipoAT||''}"></div>`:''}${rd}</div></div>`}).join('');
+    U.$('t-gantt').innerHTML=`<div class="card"><h3 style="color:${C3.az}">📅 Gantt AT × RD (${V.length} interfaces)</h3>${ctl}
+      <div class="gx-lg"><span><b style="color:${C3.az}">◆</b> Energização AT</span><span><b style="color:${C3.vd}">●</b> RD após AT</span><span><b style="color:${C3.vm}">●</b> RD antes da AT (sem fonte)</span><span><b style="color:${C3.am}">│</b> Hoje</span></div>
+      <div class="tw" style="max-height:620px"><div class="gx"><div class="gx-h"><div class="gx-l">Interface</div><div class="gx-k">${head}</div></div>${rows}</div></div>
+      ${V.length>300?'<p class="mut">Exibindo as 300 primeiras. Use os filtros para refinar.</p>':''}</div>`;
+  }
+};
+
+/* ---------- Registro das abas (antes do afterLoad: desativa a Prévia) ---------- */
+App.reg('dash','📊 Dashboard',Dash,1);
+App.reg('gantt','📅 Gantt',Gantt,2);
+App.on('badges',b=>{const n=Model.all().filter(v=>v.semFonte.length).length;if(n)b.dash=n});
+</script>
+
+<!-- ==================== MÓDULO 4 — CADASTRO E CONFIRMAÇÃO ==================== -->
+<style>
+.cf-it{border:1px solid #e3e7ee;border-left:5px solid #065DAC;border-radius:8px;padding:10px 12px;margin-bottom:10px;background:#fff}
+.cf-it h4{margin:0 0 6px;color:#32306E;font-size:14px}
+.cf-rd{display:flex;align-items:center;gap:8px;font-size:12px;padding:3px 0;border-bottom:1px dashed #eef1f5}
+.cf-bt{border:0;border-radius:5px;padding:5px 10px;color:#fff;cursor:pointer;font-size:12px;margin-right:4px}
+.cf-bt.vd{background:#0B9454}.cf-bt.am{background:#EAA02E}.cf-bt.vm{background:#B92927}.cf-bt.az{background:#065DAC}.cf-bt.rx{background:#32306E}
+.cf-x{background:none;border:0;color:#B92927;cursor:pointer;font-weight:700}
+.cf-it textarea{width:100%;min-height:38px;margin-top:6px;border:1px solid #dde3ea;border-radius:5px;font-size:12px;padding:5px}
+</style>
+<script>
+"use strict";
+/* ---------- Persistência das decisões (LocalStorage) ---------- */
+const Dec={
+  K:'eqtl.gi.v2.decisoes',
+  all(){try{return JSON.parse(localStorage.getItem(this.K))||{}}catch(e){return{}}},
+  get(p){return this.all()[p]||{}},
+  set(p,o){const A=this.all();A[p]={...(A[p]||{}),...o,ts:new Date().toISOString(),user:(S.config&&S.config.user)||''};localStorage.setItem(this.K,JSON.stringify(A))},
+  apply(v){
+    const d=Dec.get(v.pep);if(!d.ts||v._dts===d.ts)return v;
+    if(!v._rds0)v._rds0=v.rds.slice();
+    const pool=[...v._rds0,...Model.orphans()];
+    v.rds=v._rds0.filter(r=>!(d.rem||[]).includes(r.id));
+    (d.add||[]).forEach(id=>{const r=pool.find(x=>x.id===id);if(r&&!v.rds.some(x=>x.id===id))v.rds.push(r)});
+    v.semFonte=v.rds.filter(r=>v.dAT&&r.dEn&&r.dEn<v.dAT);
+    if(d.status)v.status=d.status;v.obs=d.obs||'';v._dts=d.ts;return v;
+  }
+};
+/* Aplica as decisões sobre o modelo existente, sem alterar os Módulos 1 e 2 */
+['all','filtered'].forEach(f=>{const o=Model[f].bind(Model);Model[f]=(...a)=>o(...a).map(Dec.apply)});
+const _orf4=Model.orphans.bind(Model);
+Model.orphans=()=>{const U4=new Set(Object.values(Dec.all()).flatMap(d=>d.add||[]));return _orf4().filter(r=>!U4.has(r.id))};
+const rr4=()=>{try{(App.render||App.refresh).call(App)}catch(e){Conf.render()}};
+
+/* ---------- Aba Confirmação ---------- */
+const Conf={
+  st:'pend',q:'',
+  act(p,s){const o=document.getElementById('obs-'+p);Dec.set(p,{status:s,obs:o?o.value:''});rr4()},
+  rem(p,id){const d=Dec.get(p);Dec.set(p,{rem:[...new Set([...(d.rem||[]),id])],add:(d.add||[]).filter(x=>x!==id),status:'Em Ajuste'});rr4()},
+  add(p){const s=document.getElementById('add-'+p);if(!s||!s.value)return;const d=Dec.get(p);
+    Dec.set(p,{add:[...new Set([...(d.add||[]),s.value])],rem:(d.rem||[]).filter(x=>x!==s.value),status:'Em Ajuste'});rr4()},
+  reset(p){if(!confirm('Desfazer todas as decisões desta interface?'))return;const A=Dec.all();delete A[p];localStorage.setItem(Dec.K,JSON.stringify(A));location.reload()},
+  csv(){
+    const L=[['PEP_AT','Interface','SE','Status','RDs vinculadas','Observação','Usuário','Data decisão']];
+    Model.all().forEach(v=>{const d=Dec.get(v.pep);L.push([v.pep,v.id,v.se,v.status,v.rds.map(r=>r.id).join(' | '),d.obs||'',d.user||'',d.ts||''])});
+    const b=new Blob(['\ufeff'+L.map(r=>r.map(c=>`"${String(c??'').replace(/"/g,'""')}"`).join(';')).join('\n')],{type:'text/csv'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='decisoes_AT_RD_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+  },
+  render(){
+    let V=Model.filtered();
+    if(this.st==='pend')V=V.filter(v=>['Sugerida','Em Ajuste'].includes(v.status));
+    else if(this.st)V=V.filter(v=>v.status===this.st);
+    if(this.q){const q=U.N(this.q);V=V.filter(v=>U.N(v.id+' '+v.se+' '+v.pep).includes(q))}
+    const O=Model.orphans(),opt=O.slice(0,500).map(r=>`<option value="${U.esc(r.id)}">${U.esc(r.id)} — ${U.esc((r.desc||'').slice(0,60))}</option>`).join('');
+    const tot=Model.all(),c=s=>tot.filter(v=>v.status===s).length,pc=tot.length?Math.round(c('Confirmada')/tot.length*100):0;
+    const bc={'Confirmada':'#0B9454','Em Ajuste':'#EAA02E','Rejeitada':'#B92927','Encerrada':'#32306E'};
+    U.$('t-conf').innerHTML=`<div class="card"><h3 style="color:#065DAC">✅ Cadastro e Confirmação de Vínculos</h3>
+      <div style="background:#eef1f5;border-radius:6px;height:14px;overflow:hidden;margin:6px 0"><div style="width:${pc}%;height:100%;background:#0B9454"></div></div>
+      <p class="mut">Progresso: <b style="color:#0B9454">${c('Confirmada')} confirmadas (${pc}%)</b> • <b style="color:#EAA02E">${c('Em Ajuste')} em ajuste</b> • ${c('Sugerida')} sugeridas • <b style="color:#B92927">${c('Rejeitada')} rejeitadas</b></p>
+      <div class="row" style="gap:10px;margin:8px 0">
+        <select onchange="Conf.st=this.value;Conf.render()">${[['pend','⏳ Pendentes'],['','Todas'],['Confirmada','Confirmadas'],['Rejeitada','Rejeitadas'],['Encerrada','Encerradas']].map(([k,l])=>`<option value="${k}" ${this.st===k?'selected':''}>${l}</option>`).join('')}</select>
+        <input placeholder="🔎 Interface, SE ou PEP" value="${U.esc(this.q)}" onchange="Conf.q=this.value;Conf.render()">
+        <button class="cf-bt rx" onclick="Conf.csv()">⬇ Exportar decisões (CSV)</button></div></div>
+      ${V.slice(0,100).map(v=>{const P=U.esc(v.pep),q=U.q(v.pep);return`<div class="cf-it" style="border-left-color:${bc[v.status]||'#065DAC'}">
+        <h4>${U.esc(v.id)} <span class="mut">• ${U.esc(v.se)} • AT ${P} • ${U.fmtD(v.dAT)}</span> ${U.stBadge(v.status)}</h4>
+        ${v.rds.map(r=>{const bad=v.dAT&&r.dEn&&r.dEn<v.dAT;return`<div class="cf-rd">${bad?'🔴':'🟢'} <b>${U.esc(r.id)}</b><span class="mut" style="flex:1">${U.esc((r.desc||'').slice(0,80))} • ${U.fmtD(r.dEn)}${r.score!=null?' • score '+r.score:''}</span><button class="cf-x" title="Desvincular" onclick="Conf.rem(${q},${U.q(r.id)})">✖</button></div>`}).join('')||'<p class="mut">⚪ Nenhuma RD vinculada</p>'}
+        <div class="row" style="gap:6px;margin-top:6px"><select id="add-${P}" style="flex:1"><option value="">➕ Vincular RD órfã…</option>${opt}</select><button class="cf-bt az" onclick="Conf.add(${q})">Vincular</button></div>
+        <textarea id="obs-${P}" placeholder="Observação / justificativa">${U.esc(v.obs||'')}</textarea>
+        <div style="margin-top:6px"><button class="cf-bt vd" onclick="Conf.act(${q},'Confirmada')">✔ Confirmar</button><button class="cf-bt am" onclick="Conf.act(${q},'Em Ajuste')">✎ Em ajuste</button><button class="cf-bt vm" onclick="Conf.act(${q},'Rejeitada')">✖ Rejeitar</button><button class="cf-bt rx" onclick="Conf.act(${q},'Encerrada')">■ Encerrar</button>
+        <button class="cf-x" style="float:right" onclick="Conf.reset(${q})">↺ desfazer</button></div></div>`}).join('')||'<div class="card"><p style="color:#0B9454">✅ Nada pendente neste filtro. Pode ir tomar um café! ☕</p></div>'}
+      ${V.length>100?'<p class="mut">Exibindo 100. Refine pelos filtros.</p>':''}`;
+  }
+};
+App.reg('conf','✅ Confirmação',Conf,3);
+App.on('badges',b=>{const n=Model.all().filter(v=>['Sugerida','Em Ajuste'].includes(v.status)).length;if(n)b.conf=n});
+</script>
+
+<!-- ==================== MÓDULO 5 — DIAGNÓSTICO FCS ==================== -->
+<style>
+.fcs-it{border:1px solid #e3e7ee;border-left:6px solid #065DAC;border-radius:8px;background:#fff;padding:12px 14px;margin-bottom:12px}
+.fcs-it h4{margin:0 0 8px;font-size:15px}
+.fcs-g{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;font-size:12.5px}
+.fcs-g div{background:#f6f8fb;border-radius:6px;padding:8px}
+.fcs-g b{display:block;color:#32306E;margin-bottom:3px}
+.fcs-top{font-size:12px;margin-top:8px;color:#32306E}
+.fcs-top a{color:#065DAC;cursor:pointer;text-decoration:underline;margin-right:8px}
+.fcs-hd{background:#065DAC;color:#fff;border-radius:8px;padding:14px 16px;margin-bottom:12px}
+.fcs-hd h2{margin:0;font-size:18px}
+@media print{
+  body *{visibility:hidden}
+  #t-fcs,#t-fcs *{visibility:visible}
+  #t-fcs{position:absolute;left:0;top:0;width:100%}
+  .noprt{display:none!important}
+  .fcs-it{break-inside:avoid}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+<script>
+"use strict";
+const FCS={
+  build(){
+    const V=Model.filtered(),O=Model.orphans().filter(r=>Filters.matchRD(r)),pend=V.filter(v=>['Sugerida','Em Ajuste'].includes(v.status));
+    const sf=V.filter(v=>v.semFonte.length),nSf=sf.reduce((t,v)=>t+v.semFonte.length,0),
+      idl=V.filter(v=>v.idle&&v.idle.length),nId=idl.reduce((t,v)=>t+v.idle.length,0),
+      des=V.filter(v=>v.desal&&v.desal.length),amb=V.filter(v=>v.amb),sem=V.filter(v=>!v.rds.length);
+    const I=[];
+    if(nSf)I.push({c:'#B92927',s:'🔴 Crítico',t:'Obras RD energizando sem fonte',
+      f:`${nSf} obra(s) RD em ${sf.length} interface(s) com energização prevista ANTES da AT.`,
+      ca:'Cronogramas de AT e RD planejados de forma independente. A AT atrasou ou a RD foi antecipada.',
+      so:'Replanejar a RD para depois da AT ou priorizar a AT. Formalizar a data no comitê de interfaces.',L:sf});
+    if(des.length)I.push({c:'#EAA02E',s:'🟡 Atenção',t:'Previsão de AT desalinhada',
+      f:`${des.length} interface(s) com divergência entre a data da AT e a data considerada pela RD.`,
+      ca:'Base de RD desatualizada em relação ao último replanejamento da AT.',
+      so:'Sincronizar as datas entre as áreas (rotina mensal) e atualizar o cronograma RD no sistema.',L:des});
+    if(nId)I.push({c:'#EAA02E',s:'🟡 Atenção',t:'Bays ociosos (> 90 dias)',
+      f:`${nId} saída(s) com RD energizando mais de 90 dias depois da AT, em ${idl.length} interface(s).`,
+      ca:'Obras RD sem projeto ou sem verba no ritmo da AT.',
+      so:'Antecipar as RDs prioritárias ou rever o escopo de bays da AT. Capital parado também custa. 💸',L:idl});
+    if(O.length)I.push({c:'#B92927',s:'🔴 Não conformidade',t:'Obras RD órfãs',
+      f:`${O.length} obra(s) RD sem vínculo com nenhuma AT.`,
+      ca:'Descrição da obra fora do padrão ou SE/alimentador não identificado no De-Para.',
+      so:'Vincular as obras na aba Confirmação e completar os aliases do De-Para.',L:[]});
+    if(amb.length)I.push({c:'#EAA02E',s:'🟡 Atenção',t:'Vínculos ambíguos',
+      f:`${amb.length} interface(s) com mais de uma AT possível.`,
+      ca:'A mesma SE tem várias ATs no mesmo período.',
+      so:'Validar com o planejamento da expansão e confirmar o vínculo manualmente.',L:amb});
+    if(pend.length)I.push({c:'#065DAC',s:'🔵 Gestão',t:'Vínculos pendentes de confirmação',
+      f:`${pend.length} de ${V.length} interface(s) ainda sem decisão (${V.length?Math.round(pend.length/V.length*100):0}%).`,
+      ca:'A análise foi gerada automaticamente e ainda não foi validada pela área.',
+      so:'Definir um ponto focal por regional e um prazo para confirmar os vínculos.',L:pend});
+    if(sem.length)I.push({c:'#9aa3af',s:'⚪ Informativo',t:'ATs sem obra RD associada',
+      f:`${sem.length} interface(s) AT sem nenhuma RD vinculada.`,
+      ca:'AT de reforço ou RD ainda não cadastrada.',
+      so:'Confirmar se a AT precisa de saídas novas. Se precisar, abrir as obras RD.',L:sem});
+    return{V,I};
+  },
+  txt(){
+    const{V,I}=this.build();
+    return`DIAGNÓSTICO AT x RD (FCS): ${new Date().toLocaleDateString('pt-BR')}\nInterfaces analisadas: ${V.length}\n\n`+
+      I.map((x,i)=>`${i+1}. [${x.s.replace(/^\S+\s/,'')}] ${x.t}\n   FATO: ${x.f}\n   CAUSA: ${x.ca}\n   SOLUÇÃO: ${x.so}`).join('\n\n');
+  },
+  copy(){navigator.clipboard.writeText(this.txt()).then(()=>alert('📋 Diagnóstico copiado! Agora é só colar no e-mail.'))},
+  render(){
+    const{V,I}=this.build(),crit=I.filter(x=>x.c==='#B92927').length;
+    const sit=crit?`<b style="color:#fff;background:#B92927;padding:2px 8px;border-radius:4px">${crit} ponto(s) crítico(s)</b>`:`<b style="color:#fff;background:#0B9454;padding:2px 8px;border-radius:4px">✅ Sem pontos críticos</b>`;
+    U.$('t-fcs').innerHTML=`<div class="fcs-hd"><h2>📑 Diagnóstico AT × RD (Fato • Causa • Solução)</h2>
+      <div style="font-size:12px;margin-top:4px">Equatorial Energia • ${new Date().toLocaleString('pt-BR')} • ${V.length} interfaces analisadas (filtros aplicados) • ${sit}</div></div>
+      <div class="noprt" style="margin-bottom:12px"><button class="cf-bt az" onclick="window.print()">🖨 Imprimir / PDF</button><button class="cf-bt rx" onclick="FCS.copy()">📋 Copiar texto</button></div>
+      ${I.map((x,i)=>`<div class="fcs-it" style="border-left-color:${x.c}"><h4 style="color:${x.c}">${i+1}. ${x.t} <small style="color:#32306E">• ${x.s}</small></h4>
+        <div class="fcs-g"><div><b>📌 Fato</b>${U.esc(x.f)}</div><div><b>🔍 Causa</b>${U.esc(x.ca)}</div><div><b>🛠 Solução</b>${U.esc(x.so)}</div></div>
+        ${x.L.length?`<div class="fcs-top"><b>Principais:</b> ${x.L.slice(0,8).map(v=>`<a onclick="Nav.openIF(${U.q(v.pep)})">${U.esc(v.id)}</a>`).join('')}${x.L.length>8?` <span class="mut">+${x.L.length-8}</span>`:''}</div>`:''}</div>`).join('')
+      ||'<div class="card"><p style="color:#0B9454">✅ Nenhuma inconsistência encontrada. Rara como poste sem gambiarra. 😄</p></div>'}`;
+  }
+};
+App.reg('fcs','📑 Diagnóstico FCS',FCS,4);
+App.on('badges',b=>{const n=Model.all().filter(v=>v.semFonte.length).length+Model.orphans().length;if(n)b.fcs=n});
+</script>
+
+<!-- ==================== MÓDULO 6 — EXPORTAÇÃO E BACKUP ==================== -->
+<style>
+.ex-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.ex-c{background:#fff;border:1px solid #e3e7ee;border-top:4px solid #065DAC;border-radius:8px;padding:14px}
+.ex-c h4{margin:0 0 6px;color:#32306E}
+.ex-c p{font-size:12px;color:#5b6170;min-height:34px}
+</style>
+<script>
+"use strict";
+const Exp={
+  dif:(a,b)=>a&&b?Math.round((Date.parse(a)-Date.parse(b))/864e5):'',
+  hoje:()=>new Date().toISOString().slice(0,10),
+  dl(blob,nome){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=nome;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)},
+  /* Gera .xls (tabela HTML) com cabeçalho colorido, que abre direto no Excel */
+  xls(nome,H,L,cor){
+    const e=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+    const th=H.map(h=>`<th style="background:#065DAC;color:#fff;border:1px solid #ccc">${e(h)}</th>`).join('');
+    const tr=L.map((r,i)=>`<tr>${r.map((c,j)=>`<td style="border:1px solid #ddd;${cor&&cor(r,j)||''}${i%2?'background:#f6f8fb':''}">${e(c)}</td>`).join('')}</tr>`).join('');
+    this.dl(new Blob(['\ufeff<html><head><meta charset="utf-8"></head><body><table>'+`<tr>${th}</tr>`+tr+'</table></body></html>'],{type:'application/vnd.ms-excel'}),nome+'_'+this.hoje()+'.xls');
+  },
+  interfaces(){
+    const stc={'Confirmada':'#0B9454','Em Ajuste':'#EAA02E','Rejeitada':'#B92927','Encerrada':'#32306E'};
+    const L=Model.filtered().map(v=>[v.pep,v.id,v.se,v.regional||'',v.ano||'',v.status,U.fmtD(v.dAT),v.tipoAT||'',v.rds.length,v.semFonte.length,(v.desal||[]).length,(v.idle||[]).length,v.amb?'Sim':'Não',v.invT||0,v.obs||'']);
+    this.xls('interfaces_AT_RD',['PEP AT','Interface','SE','Regional','Ano','Status','Energ. AT','Tipo AT','Qtd RD','RD sem fonte','Desalinhadas','Bays ociosos','Ambígua','Investimento (R$)','Observação'],L,
+      (r,j)=>j===5&&stc[r[5]]?`color:${stc[r[5]]};font-weight:bold;`:j===9&&r[9]>0?'color:#B92927;font-weight:bold;':'');
+  },
+  rds(){
+    const sit=d=>d===''?'Sem data':d<0?'Sem fonte':d<=30?'OK (0-30d)':d<=90?'Atenção (31-90d)':'Bay ocioso (>90d)';
+    const L=[];
+    Model.filtered().forEach(v=>v.rds.forEach(r=>{const d=this.dif(r.dEn,v.dAT);L.push([r.id,r.desc||'',v.pep,v.id,v.se,v.status,U.fmtD(v.dAT),U.fmtD(r.dEn),d,sit(d),r.score??''])}));
+    Model.orphans().filter(r=>Filters.matchRD(r)).forEach(r=>L.push([r.id,r.desc||'','','','','ÓRFÃ','',U.fmtD(r.dEn),'','Sem vínculo','']));
+    const cs={'Sem fonte':'#B92927','Sem vínculo':'#B92927','Bay ocioso (>90d)':'#B92927','Atenção (31-90d)':'#EAA02E','OK (0-30d)':'#0B9454'};
+    this.xls('obras_RD',['Obra RD','Descrição','PEP AT','Interface','SE','Status','Energ. AT','Energ. RD','Defasagem (dias)','Situação','Score'],L,
+      (r,j)=>j===9&&cs[r[9]]?`color:${cs[r[9]]};font-weight:bold;`:'');
+  },
+  backup(){
+    const D=Dec.all(),n=Object.keys(D).length;
+    if(!n)return alert('⚪ Ainda não há decisões para salvar.');
+    this.dl(new Blob([JSON.stringify({app:'eqtl.gi.v2',ts:new Date().toISOString(),n,dec:D},null,1)],{type:'application/json'}),'backup_decisoes_'+this.hoje()+'.json');
+    localStorage.setItem('eqtl.gi.v2.lastbk',new Date().toISOString());this.render();
+  },
+  restore(inp){
+    const f=inp.files[0];if(!f)return;const rd=new FileReader();
+    rd.onload=()=>{try{
+      const j=JSON.parse(rd.result);if(j.app!=='eqtl.gi.v2'||!j.dec)throw 0;
+      const sub=confirm(`Backup de ${new Date(j.ts).toLocaleString('pt-BR')} com ${j.n} decisões.\n\nOK = SUBSTITUIR tudo\nCancelar = MESCLAR (vale a decisão mais recente)`);
+      const A=sub?{}:Dec.all();
+      Object.entries(j.dec).forEach(([p,d])=>{if(!A[p]||(d.ts||'')>(A[p].ts||''))A[p]=d});
+      localStorage.setItem(Dec.K,JSON.stringify(A));alert('✅ Backup restaurado!');location.reload();
+    }catch(e){alert('🔴 Arquivo inválido. Use um backup gerado por esta ferramenta.')}};
+    rd.readAsText(f);
+  },
+  limpar(){
+    if(!confirm('🔴 Apagar TODAS as decisões deste navegador?'))return;
+    if(prompt('Digite APAGAR para confirmar:')!=='APAGAR')return alert('Ufa! Nada foi apagado. 😅');
+    localStorage.removeItem(Dec.K);location.reload();
+  },
+  render(){
+    const n=Object.keys(Dec.all()).length,lb=localStorage.getItem('eqtl.gi.v2.lastbk'),
+      dias=lb?Math.floor((Date.now()-Date.parse(lb))/864e5):null,
+      [cor,msg]=!n?['#9aa3af','⚪ Nenhuma decisão registrada ainda']:dias===null?['#B92927','🔴 Nenhum backup feito até agora!']:dias>7?['#EAA02E',`🟡 Último backup foi há ${dias} dias`]:['#0B9454',`✅ Backup em dia (${new Date(lb).toLocaleString('pt-BR')})`];
+    U.$('t-exp').innerHTML=`<div class="card"><h3 style="color:#065DAC">💾 Exportação e Backup</h3>
+      <p style="border-left:5px solid ${cor};padding:6px 10px;background:#f6f8fb;color:${cor};font-weight:600">${msg} • ${n} decisão(ões) gravada(s) no navegador</p></div>
+      <div class="ex-g">
+        <div class="ex-c"><h4>📊 Excel: Interfaces</h4><p>Uma linha por interface, com status e riscos (respeita os filtros).</p><button class="cf-bt az" onclick="Exp.interfaces()">⬇ Baixar .xls</button></div>
+        <div class="ex-c"><h4>🔌 Excel: Obras RD</h4><p>Uma linha por RD, com defasagem e situação, incluindo as órfãs.</p><button class="cf-bt az" onclick="Exp.rds()">⬇ Baixar .xls</button></div>
+        <div class="ex-c" style="border-top-color:#0B9454"><h4>💾 Backup das decisões</h4><p>Salva as decisões num arquivo .json. Recomendo fazer toda semana.</p><button class="cf-bt vd" onclick="Exp.backup()">💾 Salvar backup</button></div>
+        <div class="ex-c" style="border-top-color:#EAA02E"><h4>♻ Restaurar backup</h4><p>Carrega um .json: substitui tudo ou mescla com o que já existe.</p><label class="cf-bt am" style="display:inline-block">📂 Escolher arquivo<input type="file" accept=".json" hidden onchange="Exp.restore(this)"></label></div>
+        <div class="ex-c" style="border-top-color:#B92927"><h4>🗑 Zona de perigo</h4><p>Apaga todas as decisões deste navegador. Não tem como desfazer.</p><button class="cf-bt vm" onclick="Exp.limpar()">🗑 Limpar decisões</button></div>
+      </div>`;
+  }
+};
+App.reg('exp','💾 Exportar/Backup',Exp,5);
+App.on('badges',b=>{const n=Object.keys(Dec.all()).length,lb=localStorage.getItem('eqtl.gi.v2.lastbk');if(n&&(!lb||Date.now()-Date.parse(lb)>7*864e5))b.exp='!'});
+</script>
+
+<!-- ==================== MÓDULO 7 — PAINEL EXECUTIVO E AJUDA ==================== -->
+<style>
+.px-k{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:12px}
+.px-k div{background:#fff;border:1px solid #e3e7ee;border-top:4px solid #065DAC;border-radius:8px;padding:10px;text-align:center}
+.px-k b{display:block;font-size:24px;color:#32306E}
+.px-k span{font-size:11px;color:#5b6170}
+.px-g{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.px-bar{display:flex;align-items:center;gap:6px;font-size:12px;margin:4px 0}
+.px-bar i{display:block;height:14px;border-radius:3px}
+.px-nota{width:110px;height:110px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:700;color:#fff;margin:auto}
+@media(max-width:800px){.px-g{grid-template-columns:1fr}}
+</style>
+<script>
+"use strict";
+const Exe={
+  risco:v=>v.semFonte.length*5+(v.idle||[]).length*2+(v.desal||[]).length*2+(v.amb?1:0),
+  render(){
+    const V=Model.filtered(),O=Model.orphans().filter(r=>Filters.matchRD(r)),n=V.length||1,
+      rk=V.filter(v=>this.risco(v)>0),conf=V.filter(v=>v.status==='Confirmada').length,
+      nRD=V.reduce((t,v)=>t+v.rds.length,0),nSf=V.reduce((t,v)=>t+v.semFonte.length,0),
+      inv=V.reduce((t,v)=>t+(+v.invT||0),0);
+    /* Nota: 100 - penalidades (risco, órfãs, pendências) */
+    const nota=Math.max(0,Math.round(100-rk.length/n*50-Math.min(O.length/((nRD+O.length)||1),1)*25-(1-conf/n)*25)),
+      cN=nota>=80?'#0B9454':nota>=60?'#EAA02E':'#B92927',
+      lN=nota>=80?'✅ Carteira saudável':nota>=60?'🟡 Requer atenção':'🔴 Situação crítica';
+    /* Por regional */
+    const R={};V.forEach(v=>{const k=v.regional||'N/D';R[k]=R[k]||{ok:0,rk:0};this.risco(v)?R[k].rk++:R[k].ok++});
+    const mx=Math.max(1,...Object.values(R).map(x=>x.ok+x.rk));
+    const bReg=Object.entries(R).sort((a,b)=>b[1].rk-a[1].rk).map(([k,x])=>`<div class="px-bar"><span style="width:90px">${U.esc(k)}</span>
+      <i style="width:${x.ok/mx*65}%;background:#0B9454" title="${x.ok} OK"></i><i style="width:${x.rk/mx*65}%;background:#B92927" title="${x.rk} com risco"></i><span class="mut">${x.ok}/${x.rk}</span></div>`).join('');
+    /* Próximos 12 meses */
+    const M=[],h=new Date();for(let i=0;i<12;i++){const d=new Date(h.getFullYear(),h.getMonth()+i,1);M.push({k:d.toISOString().slice(0,7),l:d.toLocaleDateString('pt-BR',{month:'short',year:'2-digit'}),at:0,rd:0})}
+    const mk=s=>s?String(s).slice(0,7):'';
+    V.forEach(v=>{const a=M.find(m=>m.k===mk(v.dAT));if(a)a.at++;v.rds.forEach(r=>{const b=M.find(m=>m.k===mk(r.dEn));if(b)b.rd++})});
+    const mm=Math.max(1,...M.map(m=>Math.max(m.at,m.rd)));
+    const bMes=M.map(m=>`<div class="px-bar"><span style="width:60px">${m.l}</span><i style="width:${m.at/mm*40}%;background:#065DAC"></i><i style="width:${m.rd/mm*40}%;background:#EAA02E"></i><span class="mut">${m.at} AT • ${m.rd} RD</span></div>`).join('');
+    const top=[...V].sort((a,b)=>this.risco(b)-this.risco(a)).filter(v=>this.risco(v)).slice(0,5);
+    const K=(t,v,c)=>`<div style="border-top-color:${c}"><b style="color:${c}">${v}</b><span>${t}</span></div>`;
+    U.$('t-exe').innerHTML=`<div class="fcs-hd"><h2>🏆 Painel Executivo: Interfaces AT × RD</h2><div style="font-size:12px">Equatorial Energia • ${new Date().toLocaleString('pt-BR')}</div></div>
+      <div class="px-g" style="margin-bottom:12px">
+        <div class="card" style="text-align:center"><h3 style="color:#065DAC">Saúde da carteira</h3><div class="px-nota" style="background:${cN}">${nota}</div><p style="color:${cN};font-weight:700">${lN}</p></div>
+        <div class="card"><h3 style="color:#B92927">🔥 Top 5 críticas</h3>${top.map((v,i)=>`<div class="px-bar"><b>${i+1}.</b><a style="color:#065DAC;cursor:pointer;flex:1" onclick="Nav.openIF(${U.q(v.pep)})">${U.esc(v.id)}</a><span class="mut">${v.semFonte.length} sem fonte • risco ${this.risco(v)}</span></div>`).join('')||'<p style="color:#0B9454">✅ Nenhuma interface crítica. Pode pedir aumento! 😄</p>'}</div></div>
+      <div class="px-k">${K('Interfaces',V.length,'#065DAC')}${K('Obras RD vinculadas',nRD,'#065DAC')}${K('Confirmadas',Math.round(conf/n*100)+'%','#0B9454')}${K('Com risco',rk.length,'#EAA02E')}${K('RD sem fonte',nSf,'#B92927')}${K('RD órfãs',O.length,'#B92927')}${K('Investimento',inv?'R$ '+(inv/1e6).toLocaleString('pt-BR',{maximumFractionDigits:1})+' mi':'—','#32306E')}</div>
+      <div class="px-g">
+        <div class="card"><h3 style="color:#065DAC">📍 Por regional <small class="mut">(🟢 OK • 🔴 risco)</small></h3>${bReg||'<p class="mut">Sem dados</p>'}</div>
+        <div class="card"><h3 style="color:#065DAC">📅 Próximos 12 meses <small class="mut">(🔵 AT • 🟡 RD)</small></h3>${bMes}</div></div>
+      <div class="card noprt" style="margin-top:12px"><h3 style="color:#32306E">❓ Ajuda rápida</h3>
+        <p class="mut">⌨ <b>1–7</b> trocar de aba • <b>Ctrl+P</b> imprimir • <b>Ctrl+F5</b> recarregar<br>
+        🔄 Fluxo: <b>Carregar bases → Dashboard → Confirmação → Diagnóstico FCS → Exportar/Backup</b><br>
+        💾 As decisões ficam no navegador. Faça backup toda semana.</p>
+        <button class="cf-bt az" onclick="window.print()">🖨 Imprimir painel</button></div>`;
+  }
+};
+App.reg('exe','🏆 Executivo',Exe,0);
+/* Atalhos 1-7 (ignora quando estiver digitando) */
+document.addEventListener('keydown',e=>{
+  if(/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)||e.ctrlKey||e.altKey)return;
+  const n=+e.key;if(n>=1&&n<=9){const t=document.querySelectorAll('[data-tab]')[n-1];if(t)t.click()}
+});
+</script>
+
 </body>
 </html>
