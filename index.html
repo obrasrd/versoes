@@ -1253,5 +1253,39 @@ App.reg('form','📥 Formulário AT/RD',{render:()=>CadB.renderF()},90);
 App.reg('cad','⚙️ Cadastros',{render:()=>CadB.render()},91);
 </script>
 
+<!-- ==================== MÓDULO SYNC — Transferência de Cadastros/Backup ==================== -->
+<script>
+"use strict";
+const Sync={
+  exp(){U.dl(`cadastros_${U.stampF()}.json`,JSON.stringify({v:1,cad:S.cad},null,1),'application/json');Audit.log('Exportar cadastros','Cadastro','json',null,'exportado');Store.save()},
+  async imp(f){
+    if(!f||!Perm.guard('gov'))return;
+    try{
+      const d=JSON.parse(await f.text());
+      /* Backup completo (💾) → substitui a base inteira */
+      if(d.obrasAT){UI.ask('Restaurar backup completo','Isso <b>substitui TODA a base</b> desta máquina. Confirmar?',()=>{
+        Store.C.forEach(k=>{if(d[k]!=null)S[k]=d[k]});S.cad=CadB.norm(S.cad);Model.touch();
+        Audit.log('Restaurar backup','Base',f.name,null,'completo');Store.save();App.render();UI.toast('Backup restaurado')});return}
+      /* Só cadastros → mescla sem duplicar, remapeando IDs */
+      if(!d.cad)throw new Error('arquivo não é de cadastros');
+      const c=CadB.norm(d.cad),map={};let n=0;
+      ['distr','reg','emp','dem'].forEach(k=>c[k].forEach(x=>{
+        x={...x};if(x.distr)x.distr=map[x.distr]||x.distr;if(x.reg)x.reg=map[x.reg]||x.reg;
+        const e=S.cad[k].find(y=>y.id===x.id||(U.N(y.nome)===U.N(x.nome)&&y.distr===x.distr&&y.reg===x.reg));
+        if(e){map[x.id]=e.id;return}S.cad[k].push(x);n++}));
+      Object.entries(c.obras).forEach(([p,o])=>{o={...o};['distr','reg','emp','dem'].forEach(k=>{if(o[k])o[k]=map[o[k]]||o[k]});
+        const a=S.cad.obras[p];if(!a||(o.upd||'')>(a.upd||'')){S.cad.obras[p]=o;n++}});
+      Audit.log('Importar cadastros','Cadastro',f.name,null,n+' itens');Store.save();App.render();UI.toast(`${n} item(ns) mesclado(s)`);
+    }catch(e){UI.toast('Arquivo inválido: '+e.message,'r')}
+  }
+};
+const _cadR=CadB.render.bind(CadB);
+CadB.render=function(){_cadR();U.$('t-cad').insertAdjacentHTML('afterbegin',`<div class="card"><h3>🔄 Transferir entre máquinas<span class="r row">
+  <button class="btn" onclick="Sync.exp()">📤 Exportar Cadastros</button>
+  <button class="btn g" ${Perm.dis('gov')} onclick="U.$('syncF').click()">📥 Importar Cadastros / Backup</button></span></h3>
+  <input type="file" id="syncF" accept=".json" hidden onchange="Sync.imp(this.files[0]);this.value=''">
+  <div class="warn">⚠ Os dados ficam no navegador de cada máquina. Exporte de um lado e importe do outro para sincronizar.</div></div>`)};
+</script>
 
+</body>
 </html>
